@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Portfolio OS</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    height: 100vh; width: 100%;
+    overflow: hidden;
+    cursor: default;
+    user-select: none;
+  }
+
+  .desktop {
+    width: 100%; height: 100vh;
+    position: relative;
+    overflow: hidden;
+    background: #F6F0E6;
+  }
+
+  .bg-svg {
+    position: absolute;
+    inset: 0; width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* ── ICON RAIL ── */
+  .icons-rail {
+    position: absolute;
+    left: 28px; top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column;
+    gap: 24px; z-index: 2;
+  }
+  .desktop-icon {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 5px;
+    cursor: pointer; width: 82px;
+    transition: transform 0.15s;
+  }
+  .desktop-icon:hover { transform: scale(1.1); }
+  .desktop-icon:active { transform: scale(0.95); }
+  .icon-img { width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; }
+  .icon-img svg { width: 54px; height: 54px; stroke: #1a1a1a; stroke-width: 1.4; fill: none; }
+  .icon-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; text-align: center;
+    color: #1a1a1a; line-height: 1.2;
+    background: rgba(246,240,230,0.88);
+    padding: 1px 4px;
+  }
+
+  /* ── MAIN WINDOW ── */
+  .main-window {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 680px;
+    background: #ddd6c8;
+    border: 2px solid #1a1a1a;
+    box-shadow: 6px 6px 0 #1a1a1a;
+    z-index: 3;
+    animation: windowPop 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  @keyframes windowPop {
+    0%  { transform: translate(-50%,-50%) scale(0.55); opacity:0; }
+    100%{ transform: translate(-50%,-50%) scale(1);    opacity:1; }
+  }
+
+  /* ── SUB WINDOWS ── */
+  .sub-window {
+    position: absolute;
+    background: #ddd6c8;
+    border: 2px solid #1a1a1a;
+    box-shadow: 6px 6px 0 #1a1a1a;
+    width: 600px;
+    z-index: 10;
+    animation: subPop 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  @keyframes subPop {
+    0%  { transform: scale(0.55); opacity:0; }
+    100%{ transform: scale(1);    opacity:1; }
+  }
+
+  /* minimized state */
+  .sub-window.minimized .window-body { display: none; }
+  .main-window.minimized .window-body { display: none; }
+
+  .window-closing { animation: winClose 0.2s ease forwards !important; }
+  @keyframes winClose { 0%{transform:scale(1);opacity:1} 100%{transform:scale(0.45);opacity:0} }
+  .main-closing { animation: mainClose 0.2s ease forwards !important; }
+  @keyframes mainClose {
+    0%  { transform: translate(-50%,-50%) scale(1); opacity:1; }
+    100%{ transform: translate(-50%,-50%) scale(0.45); opacity:0; }
+  }
+
+  /* ── TITLE BAR ── */
+  .titlebar {
+    background: #1a1a1a;
+    padding: 9px 14px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: move;
+  }
+  .titlebar-dots { display: flex; gap: 6px; }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1.5px solid #555;
+    background: #ddd6c8;
+    cursor: pointer; transition: background 0.12s;
+    position: relative;
+  }
+  .dot.close { background: #ff5f57; border-color: #e0443e; }
+  .dot.min   { background: #ffbd2e; border-color: #dfa023; }
+  .dot.max   { background: #28c940; border-color: #1aab29; }
+  .dot.close:hover { background: #ee0055; }
+  .dot.min:hover   { background: #f5a800; }
+  .dot.max:hover   { background: #00b020; }
+  .titlebar-title {
+    flex: 1; text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: #F6F0E6;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── WINDOW BODY ── */
+  .window-body { padding: 28px; }
+
+  /* ── MAIN WINDOW INTERNALS ── */
+  .main-content { display: flex; gap: 22px; align-items: flex-start; }
+  .main-avatar {
+    width: 115px; height: 115px;
+    border: 2px solid #1a1a1a;
+    flex-shrink: 0; background: #C3CDE6;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .main-avatar svg { width: 88px; height: 88px; stroke: #1a1a1a; stroke-width: 1.2; fill: none; }
+
+  .main-text h1 { font-family:'Special Elite',serif; font-size:32px; color:#1a1a1a; margin-bottom:5px; }
+  .main-text .subtitle { font-size:12px; color:#15317E; margin-bottom:12px; font-weight:500; }
+  .main-text p { font-size:13px; color:#333; line-height:1.75; }
+
+  .progress-bar-wrap {
+    margin-top: 22px;
+    border: 1.5px solid #1a1a1a;
+    height: 17px; background: #F6F0E6; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: repeating-linear-gradient(90deg,#15317E 0,#15317E 9px,transparent 9px,transparent 12px);
+    width: 0%; transition: width 2.2s ease-out;
+  }
+  .progress-label { font-size: 10px; color: #666; margin-top: 5px; }
+
+  /* ── DOCK ── */
+  .dock {
+    display: flex; justify-content: center;
+    gap: 26px; margin-top: 22px; padding-top: 18px;
+    border-top: 1.5px solid #1a1a1a;
+  }
+  .dock-icon {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    cursor: pointer; transition: transform 0.15s;
+  }
+  .dock-icon:hover { transform: translateY(-7px) scale(1.18); }
+  .dock-icon:active { transform: scale(0.95); }
+  .dock-icon svg { width: 40px; height: 40px; stroke: #1a1a1a; stroke-width: 1.5; fill: none; }
+  .dock-label { font-size: 10px; color: #333; text-align: center; font-family: 'IBM Plex Mono'; max-width: 64px; }
+
+  /* ── BUTTONS ── */
+  .retro-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; padding: 8px 20px;
+    border: 1.5px solid #1a1a1a;
+    background: #F6F0E6;
+    cursor: pointer; color: #1a1a1a;
+    transition: all 0.1s; letter-spacing: 0.04em;
+  }
+  .retro-btn:hover { background: #15317E; color: #F6F0E6; border-color: #15317E; }
+  .retro-btn:active { transform: translate(2px,2px); }
+
+  /* ── SUB CONTENT ── */
+  .sub-content { font-family:'IBM Plex Mono',monospace; font-size:13px; color:#1a1a1a; line-height:1.85; }
+  .sub-content h2 { font-family:'Special Elite',serif; font-size:22px; margin-bottom:16px; color:#15317E; }
+  .sub-content .entry { border-left:3px solid #15317E; padding-left:12px; margin-bottom:16px; }
+  .sub-content .entry-title { font-size:14px; font-weight:500; }
+  .sub-content .entry-sub { color:#15317E; font-size:11px; margin-top:2px; opacity:0.8; }
+  .sub-content .entry-desc { font-size:12px; margin-top:5px; color:#444; }
+
+  .skill-bar { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .skill-name { width:100px; font-size:12px; }
+  .skill-track { flex:1; height:11px; border:1.5px solid #1a1a1a; background:#F6F0E6; }
+  .skill-fill { height:100%; background:repeating-linear-gradient(90deg,#15317E 0,#15317E 5px,transparent 5px,transparent 7px); }
+
+  .contact-field { margin-bottom:14px; }
+  .contact-label { font-size:11px; color:#15317E; margin-bottom:3px; letter-spacing:0.08em; font-weight:500; }
+  .contact-val { font-size:13px; color:#1a1a1a; border-bottom:1px solid #C3CDE6; padding-bottom:4px; }
+
+  .project-item { border:1.5px solid #1a1a1a; padding:12px; margin-bottom:12px; background:#F6F0E6; }
+  .project-name { font-size:14px; font-weight:500; }
+  .project-desc { font-size:11px; color:#555; margin-top:4px; line-height:1.55; }
+  .project-tags { display:flex; gap:6px; margin-top:7px; flex-wrap:wrap; }
+  .tag { font-size:10px; border:1px solid #15317E; padding:2px 7px; background:#C3CDE6; color:#15317E; }
+
+  /* ── TASKBAR ── */
+  .taskbar {
+    position: absolute; bottom:0; left:0; right:0;
+    height: 34px; background: #15317E;
+    display: flex; align-items: center;
+    padding: 0 16px; z-index: 20;
+    gap: 10px;
+  }
+  .taskbar-btn {
+    font-family: 'IBM Plex Mono'; font-size: 11px;
+    color: #F6F0E6; background: transparent;
+    border: 1px solid rgba(246,240,230,0.4);
+    padding: 2px 10px; cursor: pointer;
+    transition: background 0.1s;
+  }
+  .taskbar-btn:hover { background: rgba(246,240,230,0.15); }
+  .taskbar-btn.active { background: rgba(246,240,230,0.2); border-color: #F6F0E6; }
+  .taskbar-time { margin-left: auto; font-size: 11px; color: #C3CDE6; font-family: 'IBM Plex Mono'; }
+
+  .cursor-blink { display:inline-block; width:8px; height:16px; background:#1a1a1a; animation:blink 1s infinite; vertical-align:middle; margin-left:3px; }
+  @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+  input { font-family: 'IBM Plex Mono'; }
+  input:focus { outline: 1px solid #15317E; }
+</style>
+</head>
+<body>
+<div class="desktop" id="desktop">
+
+  <!-- BIG WAVE BACKGROUND -->
+  <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <!-- Wave layer 1: large dark navy sweep from top-left to bottom-right -->
+    <path d="M -100 0
+             C 200 -40, 500 200, 600 350
+             C 700 500, 600 650, 800 700
+             C 1000 750, 1300 600, 1540 700
+             L 1540 0 Z"
+          fill="#15317E" opacity="0.12"/>
+
+    <!-- Wave layer 2: medium light blue, bottom sweep -->
+    <path d="M -100 900
+             C 150 820, 400 720, 600 780
+             C 800 840, 950 920, 1200 860
+             C 1350 820, 1440 780, 1540 800
+             L 1540 900 Z"
+          fill="#C3CDE6" opacity="0.6"/>
+
+    <!-- Wave layer 3: big mid-tone blue, top-right corner -->
+    <path d="M 800 -100
+             C 1000 0, 1200 80, 1350 200
+             C 1500 320, 1580 420, 1540 0 Z"
+          fill="#C3CDE6" opacity="0.55"/>
+
+    <!-- Wave layer 4: dark navy, bottom-left accent -->
+    <path d="M -100 600
+             C 100 560, 250 620, 320 700
+             C 390 780, 300 880, 100 900
+             L -100 900 Z"
+          fill="#15317E" opacity="0.18"/>
+
+    <!-- Wave layer 5: large soft wave cutting through middle -->
+    <path d="M -100 400
+             C 300 300, 550 500, 850 420
+             C 1150 340, 1350 200, 1540 300
+             L 1540 520
+             C 1300 420, 1100 560, 800 600
+             C 500 640, 250 480, -100 560 Z"
+          fill="#C3CDE6" opacity="0.22"/>
+
+    <!-- Wave layer 6: subtle dark accent top -->
+    <path d="M -100 -100
+             C 200 50, 400 -20, 700 80
+             C 900 150, 1000 60, 1200 100
+             C 1350 130, 1450 80, 1540 120
+             L 1540 -100 Z"
+          fill="#15317E" opacity="0.1"/>
+  </svg>
+
+  <!-- LEFT ICON RAIL -->
+  <div class="icons-rail">
+    <div class="desktop-icon" onclick="openWindow('resume')">
+      <div class="icon-img">
+        <svg viewBox="0 0 54 54"><rect x="9" y="4" width="30" height="40" rx="2"/><line x1="15" y1="15" x2="33" y2="15"/><line x1="15" y1="22" x2="33" y2="22"/><line x1="15" y1="29" x2="25" y2="29"/><polygon points="34,30 44,39 40,43 30,34"/></svg>
+      </div>
+      <span class="icon-label">MyResume</span>
+    </div>
+    <div class="desktop-icon" onclick="openWindow('projects')">
+      <div class="icon-img">
+        <svg viewBox="0 0 54 54"><rect x="4" y="12" width="46" height="30" rx="2"/><polyline points="4,20 50,20"/><circle cx="11" cy="16" r="2.5" fill="#1a1a1a"/><circle cx="19" cy="16" r="2.5" fill="#1a1a1a"/><circle cx="27" cy="16" r="2.5" fill="#1a1a1a"/><rect x="10" y="27" width="14" height="9"/><rect x="30" y="27" width="14" height="9"/></svg>
+      </div>
+      <span class="icon-label">My_Projects</span>
+    </div>
+    <div class="desktop-icon" onclick="openWindow('about')">
+      <div class="icon-img">
+        <svg viewBox="0 0 54 54"><rect x="7" y="4" width="40" height="46" rx="2"/><circle cx="27" cy="18" r="6"/><path d="M13 44c0-8 6-13 14-13s14 5 14 13"/></svg>
+      </div>
+      <span class="icon-label">AboutMe.exe</span>
+    </div>
+    <div class="desktop-icon" onclick="openWindow('github')">
+      <div class="icon-img">
+        <svg viewBox="0 0 54 54"><path d="M27 7C16 7 7 16 7 27c0 9 6 17 14 20 1 .2 1.4-.5 1.4-1v-3.6c-5.9 1.2-7.2-2.9-7.2-2.9-1-2.4-2.4-3.1-2.4-3.1-1.9-1.3.1-1.3.1-1.3 2.1.1 3.3 2.2 3.3 2.2 1.9 3.3 5 2.3 6.2 1.7.2-1.3.8-2.2 1.4-2.8-4.7-.5-9.7-2.4-9.7-10.5 0-2.3.8-4.2 2.2-5.7-.2-.6-1-2.7.2-5.6 0 0 1.8-.6 6 2.2 1.7-.5 3.6-.7 5.5-.7s3.8.2 5.5.8c4.2-2.8 6-2.2 6-2.2 1.2 2.9.4 5 .2 5.6 1.4 1.5 2.2 3.4 2.2 5.7 0 8.1-5 9.9-9.8 10.4.8.7 1.5 2 1.5 4v6c0 .6.4 1.2 1.5 1C41 44 47 36 47 27 47 16 38 7 27 7z"/></svg>
+      </div>
+      <span class="icon-label">GitHub.lnk</span>
+    </div>
+    <div class="desktop-icon" onclick="openWindow('contact')">
+      <div class="icon-img">
+        <svg viewBox="0 0 54 54"><rect x="5" y="12" width="44" height="30" rx="2"/><polyline points="5,12 27,30 49,12"/></svg>
+      </div>
+      <span class="icon-label">Contact_Me</span>
+    </div>
+  </div>
+
+  <!-- MAIN WINDOW -->
+  <div class="main-window" id="mainWindow">
+    <div class="titlebar" onmousedown="startDrag(event,'mainWindow')">
+      <div class="titlebar-dots">
+        <div class="dot close" title="Close" onclick="closeMainWindow()"></div>
+        <div class="dot min"   title="Minimize" onclick="toggleMinimize('mainWindow')"></div>
+        <div class="dot max"   title="Maximize" onclick="toggleMaximize('mainWindow')"></div>
+      </div>
+      <div class="titlebar-title">Welcome.exe — Running</div>
+    </div>
+    <div class="window-body" id="mainWindow-body">
+      <div class="main-content">
+        <div class="main-avatar">
+          <svg viewBox="0 0 88 88"><circle cx="44" cy="32" r="18"/><path d="M13 80c0-18 14-29 31-29s31 11 31 29"/></svg>
+        </div>
+        <div class="main-text">
+          <h1>Your Name<span class="cursor-blink"></span></h1>
+          <div class="subtitle">// designer · developer · creative</div>
+          <p>Building things at the intersection of design and code. Currently open to new opportunities.</p>
+          <p style="margin-top:9px">Based in Berlin, DE 🌍</p>
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="mainProgress"></div>
+      </div>
+      <div class="progress-label">Loading portfolio... please wait</div>
+      <div class="dock">
+        <div class="dock-icon" onclick="openWindow('resume')">
+          <svg viewBox="0 0 40 40"><rect x="6" y="3" width="22" height="30" rx="2"/><line x1="11" y1="11" x2="24" y2="11"/><line x1="11" y1="16" x2="24" y2="16"/><line x1="11" y1="21" x2="18" y2="21"/><polygon points="25,22 33,29 30,32 22,25"/></svg>
+          <span class="dock-label">Resume</span>
+        </div>
+        <div class="dock-icon" onclick="openWindow('projects')">
+          <svg viewBox="0 0 40 40"><rect x="3" y="9" width="34" height="22" rx="2"/><polyline points="3,15 37,15"/><circle cx="8" cy="12" r="2" fill="#1a1a1a"/><circle cx="14" cy="12" r="2" fill="#1a1a1a"/><rect x="7" y="20" width="10" height="6"/><rect x="22" y="20" width="10" height="6"/></svg>
+          <span class="dock-label">Projects</span>
+        </div>
+        <div class="dock-icon" onclick="openWindow('about')">
+          <svg viewBox="0 0 40 40"><rect x="5" y="3" width="30" height="34" rx="2"/><circle cx="20" cy="13" r="5"/><path d="M9 33c0-6 5-10 11-10s11 4 11 10"/></svg>
+          <span class="dock-label">About Me</span>
+        </div>
+        <div class="dock-icon" onclick="openWindow('github')">
+          <svg viewBox="0 0 40 40"><path d="M20 5C12 5 5 12 5 20c0 7 4 12 10 15 .7.1 1-.4 1-.7v-2.7c-3.9.9-4.8-1.9-4.8-1.9-.6-1.6-1.6-2-1.6-2-1.3-.9.1-.9.1-.9 1.4.1 2.2 1.5 2.2 1.5 1.3 2.2 3.4 1.6 4.2 1.2.1-.9.5-1.6.9-1.9-3.2-.4-6.5-1.6-6.5-7 0-1.6.6-2.8 1.5-3.8-.2-.4-.7-1.8.1-3.7 0 0 1.2-.4 4 1.5 1.2-.3 2.4-.5 3.6-.5s2.4.2 3.6.5c2.8-1.9 4-1.5 4-1.5.8 1.9.3 3.3.1 3.7.9 1 1.5 2.2 1.5 3.8 0 5.4-3.3 6.6-6.5 7 .5.5 1 1.4 1 2.7v4c0 .4.3.8 1 .7 6-2 10-8 10-15C35 12 28 5 20 5z"/></svg>
+          <span class="dock-label">GitHub</span>
+        </div>
+        <div class="dock-icon" onclick="openWindow('contact')">
+          <svg viewBox="0 0 40 40"><rect x="3" y="9" width="34" height="22" rx="2"/><polyline points="3,9 20,22 37,9"/></svg>
+          <span class="dock-label">Contact</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKBAR -->
+  <div class="taskbar" id="taskbar">
+    <div class="taskbar-time" id="clock">00:00</div>
+  </div>
+</div>
+
+<script>
+var windows = {};
+var zBase = 10;
+var maximized = {};
+var minimized = {};
+var savedPositions = {};
+
+var content = {
+  resume: {
+    title: 'MyResume.pdf',
+    pos: {top:'8%', left:'22%'},
+    html: `<div class="sub-content">
+      <h2>Curriculum Vitae</h2>
+      <div class="entry">
+        <div class="entry-title">Senior Designer @ Studio XYZ</div>
+        <div class="entry-sub">2022 – present · Berlin</div>
+        <div class="entry-desc">Led visual identity for 12+ brands. Managed design system across 3 products.</div>
+      </div>
+      <div class="entry">
+        <div class="entry-title">UI Designer @ Agency ABC</div>
+        <div class="entry-sub">2020 – 2022 · Remote</div>
+        <div class="entry-desc">Designed responsive web apps and mobile interfaces.</div>
+      </div>
+      <div class="entry">
+        <div class="entry-title">B.A. Communication Design</div>
+        <div class="entry-sub">2016 – 2020 · University of Arts</div>
+      </div>
+      <div style="margin-top:18px;border-top:1px solid #C3CDE6;padding-top:14px">
+        <div class="skill-bar"><span class="skill-name">Figma</span><div class="skill-track"><div class="skill-fill" style="width:90%"></div></div></div>
+        <div class="skill-bar"><span class="skill-name">React</span><div class="skill-track"><div class="skill-fill" style="width:75%"></div></div></div>
+        <div class="skill-bar"><span class="skill-name">CSS / HTML</span><div class="skill-track"><div class="skill-fill" style="width:85%"></div></div></div>
+        <div class="skill-bar"><span class="skill-name">Illustration</span><div class="skill-track"><div class="skill-fill" style="width:70%"></div></div></div>
+      </div>
+      <button class="retro-btn" style="margin-top:16px;width:100%">⬇ Download PDF</button>
+    </div>`
+  },
+  projects: {
+    title: 'My_Projects.dir',
+    pos: {top:'10%', left:'30%'},
+    html: `<div class="sub-content">
+      <h2>Selected Work</h2>
+      <div class="project-item">
+        <div class="project-name">Portfolio OS v2</div>
+        <div class="project-desc">This very website. A retro Mac-inspired personal site built with vanilla HTML/CSS/JS.</div>
+        <div class="project-tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JS</span></div>
+      </div>
+      <div class="project-item">
+        <div class="project-name">Brandify Design System</div>
+        <div class="project-desc">A complete design system with 200+ components for a SaaS product.</div>
+        <div class="project-tags"><span class="tag">Figma</span><span class="tag">React</span><span class="tag">Storybook</span></div>
+      </div>
+      <div class="project-item">
+        <div class="project-name">Night Market App</div>
+        <div class="project-desc">Food discovery app for street food lovers. Won best UX at hackathon 2023.</div>
+        <div class="project-tags"><span class="tag">UX</span><span class="tag">Figma</span><span class="tag">Mobile</span></div>
+      </div>
+    </div>`
+  },
+  about: {
+    title: 'AboutMe.exe',
+    pos: {top:'12%', left:'38%'},
+    html: `<div class="sub-content">
+      <h2>About Me</h2>
+      <p style="margin-bottom:14px">Hi! I'm [Your Name], a designer & developer based in Berlin. I care deeply about crafting digital experiences that feel both beautiful and intuitive.</p>
+      <p style="margin-bottom:14px">When I'm not pushing pixels I'm probably on my bike, at a record store, or trying to make sourdough work.</p>
+      <div style="border:1.5px solid #C3CDE6;padding:14px;background:#F6F0E6;margin-top:14px">
+        <div style="font-size:11px;color:#15317E;margin-bottom:8px;font-weight:500">// fun_facts.txt</div>
+        <div style="margin-bottom:5px">☕ Coffee: 3–4 cups/day</div>
+        <div style="margin-bottom:5px">🎵 Listening to: Jazz & ambient</div>
+        <div style="margin-bottom:5px">📚 Reading: Designing with Type</div>
+        <div>🌍 Open to: Remote & EU roles</div>
+      </div>
+    </div>`
+  },
+  github: {
+    title: 'GitHub.lnk → github.com',
+    pos: {top:'14%', left:'26%'},
+    html: `<div class="sub-content">
+      <h2>GitHub</h2>
+      <p style="margin-bottom:14px">Check out my open source work and side projects.</p>
+      <div style="font-size:11px;color:#15317E;margin-bottom:12px;font-weight:500">// recent repos</div>
+      <div class="project-item">
+        <div class="project-name">↗ portfolio-os</div>
+        <div class="project-desc">Source code for this site</div>
+        <div class="project-tags"><span class="tag">⭐ 48</span><span class="tag">HTML</span></div>
+      </div>
+      <div class="project-item">
+        <div class="project-name">↗ design-tokens-cli</div>
+        <div class="project-desc">Convert Figma tokens to CSS variables</div>
+        <div class="project-tags"><span class="tag">⭐ 120</span><span class="tag">JS</span></div>
+      </div>
+      <button class="retro-btn" style="margin-top:12px;width:100%" onclick="window.open('https://github.com','_blank')">Open GitHub ↗</button>
+    </div>`
+  },
+  contact: {
+    title: 'Contact_Me.form',
+    pos: {top:'16%', left:'34%'},
+    html: `<div class="sub-content">
+      <h2>Get In Touch</h2>
+      <div class="contact-field"><div class="contact-label">EMAIL</div><div class="contact-val">hello@yourname.com</div></div>
+      <div class="contact-field"><div class="contact-label">LINKEDIN</div><div class="contact-val">linkedin.com/in/yourname</div></div>
+      <div class="contact-field"><div class="contact-label">TWITTER / X</div><div class="contact-val">@yourhandle</div></div>
+      <div class="contact-field"><div class="contact-label">LOCATION</div><div class="contact-val">Berlin, Germany 🇩🇪</div></div>
+      <div style="border-top:1px solid #C3CDE6;margin-top:16px;padding-top:14px">
+        <div style="font-size:11px;color:#15317E;margin-bottom:9px;font-weight:500">// send a message</div>
+        <input placeholder="Your message..." style="width:100%;background:#F6F0E6;border:1.5px solid #C3CDE6;padding:9px;font-size:12px;color:#1a1a1a;margin-bottom:9px;display:block">
+        <button class="retro-btn" style="width:100%">Send Message ✉</button>
+      </div>
+    </div>`
+  }
+};
+
+/* ── OPEN WINDOW ── */
+function openWindow(id) {
+  if (windows[id]) {
+    // if minimized, restore it
+    if (minimized[id]) toggleMinimize(id);
+    windows[id].style.zIndex = ++zBase;
+    return;
+  }
+  var c = content[id];
+  if (!c) return;
+  var w = document.createElement('div');
+  w.className = 'sub-window';
+  w.id = 'win_' + id;
+  w.style.top  = c.pos.top;
+  w.style.left = c.pos.left;
+  w.style.zIndex = ++zBase;
+  w.innerHTML = `
+    <div class="titlebar" onmousedown="startDrag(event,'win_${id}')">
+      <div class="titlebar-dots">
+        <div class="dot close" title="Close"    onclick="closeWindow('${id}')"></div>
+        <div class="dot min"   title="Minimize" onclick="toggleMinimize('win_${id}')"></div>
+        <div class="dot max"   title="Maximize" onclick="toggleMaximize('win_${id}')"></div>
+      </div>
+      <div class="titlebar-title">${c.title}</div>
+    </div>
+    <div class="window-body" id="win_${id}-body">${c.html}</div>
+  `;
+  document.getElementById('desktop').appendChild(w);
+  windows[id] = w;
+  w.addEventListener('mousedown', function() { w.style.zIndex = ++zBase; });
+
+  // add taskbar button
+  addTaskbarBtn(id, c.title);
+}
+
+/* ── CLOSE ── */
+function closeWindow(id) {
+  var w = windows[id];
+  if (!w) return;
+  w.classList.add('window-closing');
+  setTimeout(function() {
+    w.remove();
+    delete windows[id];
+    delete minimized[id];
+    delete maximized[id];
+    removeTaskbarBtn(id);
+  }, 200);
+}
+
+function closeMainWindow() {
+  var w = document.getElementById('mainWindow');
+  w.classList.add('main-closing');
+  setTimeout(function() { w.style.display = 'none'; }, 200);
+  removeTaskbarBtn('main');
+}
+
+/* ── MINIMIZE ── */
+function toggleMinimize(winId) {
+  var w = document.getElementById(winId);
+  if (!w) return;
+  var body = document.getElementById(winId + '-body');
+  if (!body) return;
+
+  if (minimized[winId]) {
+    // restore
+    body.style.display = '';
+    minimized[winId] = false;
+    var btn = document.getElementById('tbtn_' + winId);
+    if (btn) btn.classList.remove('active');
+  } else {
+    // minimize
+    body.style.display = 'none';
+    minimized[winId] = true;
+    var btn = document.getElementById('tbtn_' + winId);
+    if (btn) btn.classList.add('active');
+  }
+}
+
+/* ── MAXIMIZE ── */
+function toggleMaximize(winId) {
+  var w = document.getElementById(winId);
+  if (!w) return;
+
+  if (maximized[winId]) {
+    // restore saved position/size
+    var s = savedPositions[winId];
+    if (s) {
+      w.style.top = s.top; w.style.left = s.left;
+      w.style.width = s.width; w.style.height = s.height;
+      w.style.transform = s.transform;
+      w.style.maxHeight = ''; w.style.overflowY = '';
+    }
+    maximized[winId] = false;
+  } else {
+    // save current
+    var rect = w.getBoundingClientRect();
+    savedPositions[winId] = {
+      top: w.style.top, left: w.style.left,
+      width: w.style.width, height: w.style.height,
+      transform: w.style.transform
+    };
+    // go full (minus taskbar)
+    w.style.top = '0px'; w.style.left = '0px';
+    w.style.width = '100vw'; w.style.height = 'calc(100vh - 34px)';
+    w.style.transform = 'none';
+    w.style.maxHeight = 'calc(100vh - 34px)';
+    w.style.overflowY = 'auto';
+    w.style.zIndex = ++zBase;
+    maximized[winId] = true;
+  }
+}
+
+/* ── TASKBAR BUTTONS ── */
+function addTaskbarBtn(id, title) {
+  removeTaskbarBtn(id); // avoid dupes
+  var bar = document.getElementById('taskbar');
+  var clock = document.getElementById('clock');
+  var btn = document.createElement('div');
+  btn.className = 'taskbar-btn';
+  btn.id = 'tbtn_win_' + id;
+  btn.textContent = title.split(' ')[0];
+  btn.onclick = function() {
+    var w = windows[id];
+    if (!w) return;
+    if (minimized['win_' + id]) {
+      toggleMinimize('win_' + id);
+    } else {
+      w.style.zIndex = ++zBase;
+    }
+  };
+  bar.insertBefore(btn, clock);
+}
+function removeTaskbarBtn(id) {
+  var el = document.getElementById('tbtn_win_' + id) || document.getElementById('tbtn_' + id);
+  if (el) el.remove();
+}
+
+/* ── DRAG ── */
+var dragging = null, dragOx = 0, dragOy = 0;
+function startDrag(e, id) {
+  var w = document.getElementById(id);
+  if (!w || maximized[id]) return;
+  dragging = w;
+  dragging.style.zIndex = ++zBase;
+  var r = dragging.getBoundingClientRect();
+  dragOx = e.clientX - r.left;
+  dragOy = e.clientY - r.top;
+  e.preventDefault();
+}
+document.addEventListener('mousemove', function(e) {
+  if (!dragging) return;
+  var dr = document.getElementById('desktop').getBoundingClientRect();
+  dragging.style.left = (e.clientX - dr.left - dragOx) + 'px';
+  dragging.style.top  = (e.clientY - dr.top  - dragOy) + 'px';
+  dragging.style.transform = 'none';
+});
+document.addEventListener('mouseup', function() { dragging = null; });
+
+/* ── CLOCK ── */
+function updateClock() {
+  var d = new Date();
+  document.getElementById('clock').textContent =
+    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 15000);
+
+setTimeout(function() { document.getElementById('mainProgress').style.width = '72%'; }, 300);
+</script>
+</body>
+</html>
