@@ -6,6 +6,17 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
+  :root {
+    --taskbar-h: 34px;
+    --icon-col-w: clamp(76px, 7.2vmin, 96px);
+    --icon-img-size: clamp(62px, 6vmin, 74px);
+    --icon-svg-size: clamp(56px, 5.4vmin, 68px);
+    --main-window-w: clamp(500px, 42vw, 620px);
+    --sub-window-w: clamp(440px, 38vw, 560px);
+    --dock-gap: clamp(16px, 2.2vw, 26px);
+    --win-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
@@ -32,33 +43,53 @@
   /* ── ICON RAIL ── */
   .icons-rail {
     position: absolute;
-    left: 28px;
-    top: 0; bottom: 34px; /* full height minus taskbar */
-    display: flex; flex-direction: column;
-    justify-content: center; /* vertically centered with equal spacing */
-    gap: 0;
+    left: clamp(18px, 2.5vw, 32px);
+    top: 0;
+    bottom: var(--taskbar-h);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
     z-index: 2;
-    padding: 40px 0;
+    padding: clamp(24px, 4vh, 48px) 0;
+    width: var(--icon-col-w);
   }
-  /* equal space distribution */
-  .icons-rail { justify-content: space-evenly; }
 
   .desktop-icon {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 5px;
-    cursor: pointer; width: 82px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    width: var(--icon-col-w);
     transition: transform 0.15s;
   }
-  .desktop-icon:hover { transform: scale(1.1); }
+  .desktop-icon:hover { transform: scale(1.08); }
   .desktop-icon:active { transform: scale(0.95); }
-  .icon-img { width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; }
-  .icon-img svg { width: 54px; height: 54px; stroke: #1a1a1a; stroke-width: 1.4; fill: none; }
+  .icon-img {
+    width: var(--icon-img-size);
+    height: var(--icon-img-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-img svg {
+    width: var(--icon-svg-size);
+    height: var(--icon-svg-size);
+    stroke: #1a1a1a;
+    stroke-width: 1.4;
+    fill: none;
+  }
   .icon-label {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px; text-align: center;
-    color: #1a1a1a; line-height: 1.2;
+    font-size: clamp(10px, 1vmin, 11px);
+    text-align: center;
+    color: #1a1a1a;
+    line-height: 1.2;
     background: rgba(246,240,230,0.92);
     padding: 1px 4px;
+    max-width: 100%;
+    word-break: break-word;
   }
 
   /* ── WINDOW BASE ── */
@@ -66,70 +97,42 @@
     background: #F6F0E6;
     border: 2px solid #1a1a1a;
     box-shadow: 6px 6px 0 #1a1a1a;
+    position: absolute;
+    transform: none;
+    will-change: top, left, width, height, transform, opacity;
   }
 
   .main-window {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 680px;
+    width: var(--main-window-w);
+    max-width: calc(100vw - var(--icon-col-w) - 48px);
     z-index: 3;
-    animation: windowPop 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
+    visibility: hidden;
   }
-  @keyframes windowPop {
-    0%   { transform: translate(-50%,-50%) scale(0.55); opacity:0; }
-    100%{ transform: translate(-50%,-50%) scale(1);    opacity:1; }
-  }
+  .main-window.ready { visibility: visible; }
 
   .sub-window {
-    position: absolute;
-    width: 600px;
+    width: var(--sub-window-w);
+    max-width: calc(100vw - 32px);
     z-index: 10;
-    animation: subPop 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
-  }
-  @keyframes subPop {
-    0%   { transform: scale(0.55); opacity:0; }
-    100%{ transform: scale(1);    opacity:1; }
   }
 
-  /* ── MINIMIZE ANIMATION ── */
-  .minimizing {
-    animation: minimizeAnim 0.22s cubic-bezier(0.55,0.085,0.68,0.53) forwards !important;
+  .window-opening {
+    animation: windowOpen 0.32s var(--win-ease) both;
   }
-  @keyframes minimizeAnim {
-    0%    { transform: scale(1) translateY(0); opacity:1; }
-    100% { transform: scale(0.3) translateY(300px); opacity:0; }
-  }
-  .minimizing-main {
-    animation: minimizeMainAnim 0.22s cubic-bezier(0.55,0.085,0.68,0.53) forwards !important;
-  }
-  @keyframes minimizeMainAnim {
-    0%    { transform: translate(-50%,-50%) scale(1); opacity:1; }
-    100% { transform: translate(-50%,-50%) scale(0.3) translateY(300px); opacity:0; }
-  }
-  .restoring {
-    animation: restoreAnim 0.25s cubic-bezier(0.175,0.885,0.32,1.275) forwards !important;
-  }
-  @keyframes restoreAnim {
-    0%    { transform: scale(0.3) translateY(300px); opacity:0; }
-    100% { transform: scale(1) translateY(0); opacity:1; }
+  @keyframes windowOpen {
+    0%   { opacity: 0; transform: scale(0.88); }
+    100% { opacity: 1; transform: scale(1); }
   }
 
-  /* ── MAXIMIZE ANIMATION ── */
-  .maximizing {
-    animation: maximizeAnim 0.2s ease-out forwards !important;
-  }
-  @keyframes maximizeAnim {
-    0%   { opacity:0.5; }
-    100% { opacity:1; }
+  .window-animating {
+    pointer-events: none;
   }
 
   /* ── CLOSE ANIMATIONS ── */
-  .window-closing { animation: winClose 0.2s ease forwards !important; }
-  @keyframes winClose { 0%{transform:scale(1);opacity:1} 100%{transform:scale(0.45);opacity:0} }
-  .main-closing { animation: mainClose 0.2s ease forwards !important; }
-  @keyframes mainClose {
-    0%  { transform: translate(-50%,-50%) scale(1); opacity:1; }
-    100%{ transform: translate(-50%,-50%) scale(0.45); opacity:0; }
+  .window-closing {
+    transition: transform 0.2s ease, opacity 0.2s ease !important;
+    transform: scale(0.45) !important;
+    opacity: 0 !important;
   }
 
   /* ── TITLE BAR ── */
@@ -159,21 +162,31 @@
   }
 
   /* ── WINDOW BODY ── */
-  .window-body { padding: 28px; }
+  .window-body { padding: clamp(20px, 2.5vw, 28px); }
 
   /* ── MAIN WINDOW INTERNALS ── */
-  .main-content { display: flex; gap: 22px; align-items: flex-start; }
+  .main-content { display: flex; gap: clamp(16px, 2vw, 22px); align-items: flex-start; }
   .main-avatar {
-    width: 115px; height: 115px;
+    width: clamp(90px, 11vw, 115px);
+    height: clamp(90px, 11vw, 115px);
     border: 2px solid #1a1a1a;
-    flex-shrink: 0; background: #C3CDE6;
-    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    background: #C3CDE6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .main-avatar svg { width: 88px; height: 88px; stroke: #1a1a1a; stroke-width: 1.2; fill: none; }
+  .main-avatar svg {
+    width: clamp(68px, 8vw, 88px);
+    height: clamp(68px, 8vw, 88px);
+    stroke: #1a1a1a;
+    stroke-width: 1.2;
+    fill: none;
+  }
 
-  .main-text h1 { font-family:'Special Elite',serif; font-size:32px; color:#1a1a1a; margin-bottom:5px; }
-  .main-text .subtitle { font-size:12px; color:#15317E; margin-bottom:12px; font-weight:500; }
-  .main-text p { font-size:13px; color:#333; line-height:1.75; }
+  .main-text h1 { font-family:'Special Elite',serif; font-size:clamp(24px, 3vw, 32px); color:#1a1a1a; margin-bottom:5px; }
+  .main-text .subtitle { font-size:clamp(11px, 1.2vw, 12px); color:#15317E; margin-bottom:12px; font-weight:500; }
+  .main-text p { font-size:clamp(12px, 1.3vw, 13px); color:#333; line-height:1.75; }
 
   .progress-bar-wrap {
     margin-top: 22px;
@@ -189,18 +202,32 @@
 
   /* ── DOCK ── */
   .dock {
-    display: flex; justify-content: center;
-    gap: 26px; margin-top: 22px; padding-top: 18px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--dock-gap);
+    margin-top: 22px;
+    padding-top: 18px;
     border-top: 1.5px solid #d0c8b8;
   }
   .dock-icon {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 6px;
-    cursor: pointer; transition: transform 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    flex: 0 0 auto;
   }
   .dock-icon:hover { transform: translateY(-7px) scale(1.18); }
   .dock-icon:active { transform: scale(0.95); }
-  .dock-icon svg { width: 40px; height: 40px; stroke: #1a1a1a; stroke-width: 1.5; fill: none; }
+  .dock-icon svg {
+    width: clamp(34px, 4vw, 40px);
+    height: clamp(34px, 4vw, 40px);
+    stroke: #1a1a1a;
+    stroke-width: 1.5;
+    fill: none;
+  }
   .dock-label { font-size: 10px; color: #444; text-align: center; font-family: 'IBM Plex Mono'; max-width: 64px; }
 
   /* ── BUTTONS ── */
@@ -238,10 +265,32 @@
   .project-tags { display:flex; gap:6px; margin-top:7px; flex-wrap:wrap; }
   .tag { font-size:10px; border:1px solid #15317E; padding:2px 7px; background:#C3CDE6; color:#15317E; }
 
+  @media (max-width: 700px) {
+    .icons-rail {
+      flex-direction: row;
+      left: 0;
+      right: 0;
+      top: auto;
+      bottom: var(--taskbar-h);
+      width: 100%;
+      height: auto;
+      padding: 8px 10px;
+      justify-content: space-around;
+      background: rgba(246,240,230,0.55);
+      backdrop-filter: blur(2px);
+    }
+    .desktop-icon { width: auto; min-width: 58px; }
+    .icon-label { font-size: 9px; }
+    .main-window, .sub-window {
+      max-width: calc(100vw - 16px);
+    }
+    .main-content { flex-direction: column; align-items: center; text-align: center; }
+  }
+
   /* ── TASKBAR ── */
   .taskbar {
     position: absolute; bottom:0; left:0; right:0;
-    height: 34px; background: #15317E;
+    height: var(--taskbar-h); background: #15317E;
     display: flex; align-items: center;
     padding: 0 16px; z-index: 20; gap: 10px;
   }
@@ -436,9 +485,12 @@ var zBase = 10;
 var maximizedState = {};
 var minimizedState = {};
 var savedPositions = {};
+var windowPositions = {};
 var mainMinimized = false;
 var mainMaximized = false;
-var mainSavedPos = null;
+var mainUserMoved = false;
+var TASKBAR_H = 34;
+var WIN_ANIM_MS = 280;
 
 /* ── WINDOW CONTENT ── */
 var content = {
@@ -550,6 +602,203 @@ var content = {
   }
 };
 
+/* ── WINDOW GEOMETRY ── */
+function desktopRect() {
+  return document.getElementById('desktop').getBoundingClientRect();
+}
+
+function captureWindowState(el) {
+  var dr = desktopRect();
+  var r = el.getBoundingClientRect();
+  return {
+    top: r.top - dr.top,
+    left: r.left - dr.left,
+    width: r.width,
+    height: r.height
+  };
+}
+
+function applyWindowState(el, state) {
+  el.style.transform = 'none';
+  el.style.top = state.top + 'px';
+  el.style.left = state.left + 'px';
+  el.style.width = state.width + 'px';
+  if (state.height) el.style.height = state.height + 'px';
+}
+
+function saveWindowPosition(winId) {
+  var el = document.getElementById(winId);
+  if (!el || el.style.display === 'none') return;
+  windowPositions[winId] = captureWindowState(el);
+}
+
+function parsePosValue(val, total) {
+  if (!val) return 0;
+  if (typeof val === 'number') return val;
+  if (String(val).indexOf('%') !== -1) return parseFloat(val) / 100 * total;
+  return parseFloat(val) || 0;
+}
+
+function placeWindow(el, top, left) {
+  el.style.transform = 'none';
+  el.style.top = top + 'px';
+  el.style.left = left + 'px';
+  saveWindowPosition(el.id);
+}
+
+function centerMainWindow(animate) {
+  var w = document.getElementById('mainWindow');
+  if (!w || mainMaximized || mainMinimized) return;
+  var dr = desktopRect();
+  var rail = document.querySelector('.icons-rail');
+  var minLeft = rail ? rail.offsetLeft + rail.offsetWidth + 20 : 120;
+  var ww = w.offsetWidth;
+  var wh = w.offsetHeight;
+  var state = {
+    top: Math.max(12, (dr.height - wh) / 2),
+    left: Math.max(minLeft, (dr.width - ww) / 2),
+    width: ww,
+    height: wh
+  };
+  if (state.left + ww > dr.width - 12) state.left = Math.max(minLeft, dr.width - ww - 12);
+  if (animate) {
+    smoothMoveWindow(w, state, WIN_ANIM_MS);
+  } else {
+    applyWindowState(w, state);
+    saveWindowPosition('mainWindow');
+  }
+}
+
+function getTaskbarTarget(winId) {
+  var btnId = winId === 'mainWindow' ? 'tbtn_main' : 'tbtn_' + winId.replace('win_', '');
+  var btn = document.getElementById(btnId);
+  var dr = desktopRect();
+  if (btn) {
+    var br = btn.getBoundingClientRect();
+    return { top: br.top - dr.top + 2, left: br.left - dr.left + 2 };
+  }
+  return { top: dr.height - TASKBAR_H + 2, left: 16 };
+}
+
+function smoothMoveWindow(el, toState, duration, onDone) {
+  var from = captureWindowState(el);
+  el.classList.add('window-animating');
+  var anim = el.animate([
+    {
+      top: from.top + 'px',
+      left: from.left + 'px',
+      width: from.width + 'px',
+      opacity: from.opacity !== undefined ? from.opacity : 1,
+      transform: from.scale !== undefined ? 'scale(' + from.scale + ')' : 'scale(1)'
+    },
+    {
+      top: toState.top + 'px',
+      left: toState.left + 'px',
+      width: (toState.width || from.width) + 'px',
+      opacity: toState.opacity !== undefined ? toState.opacity : 1,
+      transform: toState.scale !== undefined ? 'scale(' + toState.scale + ')' : 'scale(1)'
+    }
+  ], { duration: duration || WIN_ANIM_MS, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' });
+
+  anim.onfinish = function() {
+    applyWindowState(el, {
+      top: toState.top,
+      left: toState.left,
+      width: toState.width || from.width,
+      height: toState.height || from.height
+    });
+    el.style.opacity = '';
+    el.style.transform = 'none';
+    el.classList.remove('window-animating');
+    anim.cancel();
+    if (onDone) onDone();
+  };
+  return anim;
+}
+
+function minimizeToTaskbar(el, winId, onDone) {
+  saveWindowPosition(winId);
+  var current = windowPositions[winId] || captureWindowState(el);
+  var target = getTaskbarTarget(winId);
+  el.classList.add('window-animating');
+  var anim = el.animate([
+    {
+      top: current.top + 'px',
+      left: current.left + 'px',
+      width: current.width + 'px',
+      opacity: 1,
+      transform: 'scale(1)'
+    },
+    {
+      top: target.top + 'px',
+      left: target.left + 'px',
+      width: Math.max(48, current.width * 0.12) + 'px',
+      opacity: 0,
+      transform: 'scale(0.12)'
+    }
+  ], { duration: WIN_ANIM_MS, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' });
+
+  anim.onfinish = function() {
+    el.style.display = 'none';
+    el.style.opacity = '';
+    el.style.transform = 'none';
+    el.classList.remove('window-animating');
+    anim.cancel();
+    if (onDone) onDone();
+  };
+}
+
+function restoreFromTaskbar(el, winId, onDone) {
+  var saved = windowPositions[winId];
+  if (!saved) {
+    if (winId === 'mainWindow') {
+      centerMainWindow(false);
+      saved = windowPositions['mainWindow'];
+    } else {
+      saved = captureWindowState(el);
+    }
+  }
+  var target = getTaskbarTarget(winId);
+  el.style.display = '';
+  el.classList.add('window-animating');
+  applyWindowState(el, {
+    top: target.top,
+    left: target.left,
+    width: Math.max(48, saved.width * 0.12),
+    height: saved.height
+  });
+  el.style.opacity = '0';
+  el.style.transform = 'scale(0.12)';
+
+  requestAnimationFrame(function() {
+    var anim = el.animate([
+      {
+        top: target.top + 'px',
+        left: target.left + 'px',
+        width: Math.max(48, saved.width * 0.12) + 'px',
+        opacity: 0,
+        transform: 'scale(0.12)'
+      },
+      {
+        top: saved.top + 'px',
+        left: saved.left + 'px',
+        width: saved.width + 'px',
+        opacity: 1,
+        transform: 'scale(1)'
+      }
+    ], { duration: WIN_ANIM_MS, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' });
+
+    anim.onfinish = function() {
+      applyWindowState(el, saved);
+      el.style.opacity = '';
+      el.style.transform = 'none';
+      el.classList.remove('window-animating');
+      anim.cancel();
+      if (onDone) onDone();
+    };
+  });
+}
+
 /* ── OPEN ── */
 function openWindow(id) {
   playOpen();
@@ -561,10 +810,8 @@ function openWindow(id) {
   var c = content[id];
   if (!c) return;
   var w = document.createElement('div');
-  w.className = 'sub-window';
+  w.className = 'sub-window window-opening';
   w.id = 'win_' + id;
-  w.style.top  = c.pos.top;
-  w.style.left = c.pos.left;
   w.style.zIndex = ++zBase;
   w.innerHTML = `
     <div class="titlebar" onmousedown="startDrag(event,'win_${id}')">
@@ -580,6 +827,10 @@ function openWindow(id) {
   document.getElementById('desktop').appendChild(w);
   windows[id] = w;
   w.addEventListener('mousedown', function() { w.style.zIndex = ++zBase; });
+  setTimeout(function() { w.classList.remove('window-opening'); }, 320);
+
+  var dr = desktopRect();
+  placeWindow(w, parsePosValue(c.pos.top, dr.height), parsePosValue(c.pos.left, dr.width));
   addTaskbarBtn(id, c.title);
 }
 
@@ -594,6 +845,8 @@ function closeWindow(id) {
     delete windows[id];
     delete minimizedState[id];
     delete maximizedState['win_' + id];
+    delete windowPositions['win_' + id];
+    delete savedPositions['win_' + id];
     removeTaskbarBtn(id);
   }, 200);
 }
@@ -601,36 +854,36 @@ function closeWindow(id) {
 function closeMainWindow() {
   playClose();
   var w = document.getElementById('mainWindow');
-  w.classList.add('main-closing');
-  setTimeout(function() { w.style.display = 'none'; }, 200);
+  w.classList.add('window-closing');
+  setTimeout(function() {
+    w.style.display = 'none';
+    w.classList.remove('window-closing');
+  }, 200);
 }
 
-/* ── MINIMIZE (with animation) ── */
+/* ── MINIMIZE / RESTORE ── */
 function minimizeWindow(id) {
   playMinimize();
   var w = windows[id];
   if (!w || minimizedState[id]) return;
   minimizedState[id] = true;
-  w.classList.add('minimizing');
-  setTimeout(function() {
-    w.style.display = 'none';
-    w.classList.remove('minimizing');
+  addTaskbarBtn(id, content[id].title);
+  minimizeToTaskbar(w, 'win_' + id, function() {
     var btn = document.getElementById('tbtn_' + id);
     if (btn) btn.classList.add('active');
-  }, 220);
+  });
 }
 
 function restoreWindow(id) {
   playOpen();
   var w = windows[id];
-  if (!w) return;
+  if (!w || !minimizedState[id]) return;
   minimizedState[id] = false;
-  w.style.display = '';
   w.style.zIndex = ++zBase;
-  w.classList.add('restoring');
-  setTimeout(function() { w.classList.remove('restoring'); }, 250);
-  var btn = document.getElementById('tbtn_' + id);
-  if (btn) btn.classList.remove('active');
+  restoreFromTaskbar(w, 'win_' + id, function() {
+    var btn = document.getElementById('tbtn_' + id);
+    if (btn) btn.classList.remove('active');
+  });
 }
 
 function minimizeMain() {
@@ -638,62 +891,56 @@ function minimizeMain() {
   var w = document.getElementById('mainWindow');
   if (mainMinimized) return;
   mainMinimized = true;
-  w.classList.add('minimizing-main');
-  setTimeout(function() {
-    w.style.display = 'none';
-    w.classList.remove('minimizing-main');
-    addMainTaskbarBtn();
-  }, 220);
+  addMainTaskbarBtn();
+  minimizeToTaskbar(w, 'mainWindow');
 }
 
 function restoreMain() {
   playOpen();
   var w = document.getElementById('mainWindow');
+  if (!mainMinimized) return;
   mainMinimized = false;
-  w.style.display = '';
   w.style.zIndex = ++zBase;
-  // re-apply centered transform if not maximized
-  if (!mainMaximized) w.style.transform = 'translate(-50%,-50%)';
-  w.classList.add('restoring');
-  setTimeout(function() { w.classList.remove('restoring'); }, 250);
-  removeTaskbarBtn('main');
+  restoreFromTaskbar(w, 'mainWindow', function() {
+    removeTaskbarBtn('main');
+  });
 }
 
 /* ── MAXIMIZE ── */
 function toggleMaximize(winId) {
   playMaximize();
   var w = document.getElementById(winId);
-  if (!w) return;
-  var isMain = winId === 'mainWindow';
+  if (!w || w.classList.contains('window-animating')) return;
+  var dr = desktopRect();
 
   if (maximizedState[winId]) {
-    // restore
     var s = savedPositions[winId];
     if (s) {
-      w.style.top = s.top; w.style.left = s.left;
-      w.style.width = s.width; w.style.maxHeight = '';
-      w.style.overflowY = '';
-      if (isMain) {
-        w.style.transform = 'translate(-50%,-50%)';
-      } else {
-        w.style.transform = 'none';
-      }
+      smoothMoveWindow(w, s, WIN_ANIM_MS, function() {
+        w.style.maxHeight = '';
+        w.style.height = '';
+        w.style.overflowY = '';
+        w.style.width = s.width + 'px';
+        saveWindowPosition(winId);
+      });
     }
     maximizedState[winId] = false;
+    if (winId === 'mainWindow') mainMaximized = false;
   } else {
-    savedPositions[winId] = {
-      top: w.style.top, left: w.style.left, width: w.style.width
-    };
-    w.style.top = '0px'; w.style.left = '0px';
-    w.style.width = '100vw';
-    w.style.maxHeight = 'calc(100vh - 34px)';
-    w.style.overflowY = 'auto';
-    w.style.transform = 'none';
-    w.style.zIndex = ++zBase;
-    w.classList.add('maximizing');
-    setTimeout(function() { w.classList.remove('maximizing'); }, 200);
+    saveWindowPosition(winId);
+    savedPositions[winId] = windowPositions[winId] || captureWindowState(w);
+    smoothMoveWindow(w, {
+      top: 0,
+      left: 0,
+      width: dr.width,
+      height: dr.height - TASKBAR_H
+    }, WIN_ANIM_MS, function() {
+      w.style.maxHeight = (dr.height - TASKBAR_H) + 'px';
+      w.style.overflowY = 'auto';
+      w.style.zIndex = ++zBase;
+    });
     maximizedState[winId] = true;
-    if (isMain) mainMaximized = true;
+    if (winId === 'mainWindow') mainMaximized = true;
   }
 }
 
@@ -731,11 +978,12 @@ function removeTaskbarBtn(id) {
 }
 
 /* ── DRAG ── */
-var dragging = null, dragOx = 0, dragOy = 0;
+var dragging = null, dragId = null, dragOx = 0, dragOy = 0;
 function startDrag(e, id) {
   if (maximizedState[id]) return;
   dragging = document.getElementById(id);
   if (!dragging) return;
+  dragId = id;
   dragging.style.zIndex = ++zBase;
   var r = dragging.getBoundingClientRect();
   dragOx = e.clientX - r.left;
@@ -744,12 +992,70 @@ function startDrag(e, id) {
 }
 document.addEventListener('mousemove', function(e) {
   if (!dragging) return;
-  var dr = document.getElementById('desktop').getBoundingClientRect();
-  dragging.style.left = (e.clientX - dr.left - dragOx) + 'px';
-  dragging.style.top  = (e.clientY - dr.top  - dragOy) + 'px';
+  var dr = desktopRect();
+  var w = dragging.offsetWidth;
+  var h = dragging.offsetHeight;
+  var maxTop = dr.height - TASKBAR_H - h;
+  var left = Math.min(Math.max(0, e.clientX - dr.left - dragOx), dr.width - w);
+  var top = Math.min(Math.max(0, e.clientY - dr.top - dragOy), maxTop);
+  dragging.style.left = left + 'px';
+  dragging.style.top = top + 'px';
   dragging.style.transform = 'none';
 });
-document.addEventListener('mouseup', function() { dragging = null; });
+document.addEventListener('mouseup', function() {
+  if (dragging && dragId) {
+    saveWindowPosition(dragId);
+    if (dragId === 'mainWindow') mainUserMoved = true;
+  }
+  dragging = null;
+  dragId = null;
+});
+
+function clampOpenWindows() {
+  var dr = desktopRect();
+  Object.keys(windows).forEach(function(id) {
+    var w = windows[id];
+    if (!w || w.style.display === 'none' || minimizedState[id] || maximizedState['win_' + id]) return;
+    var state = captureWindowState(w);
+    var maxTop = dr.height - TASKBAR_H - state.height;
+    state.left = Math.min(Math.max(0, state.left), dr.width - state.width);
+    state.top = Math.min(Math.max(0, state.top), maxTop);
+    applyWindowState(w, state);
+    saveWindowPosition('win_' + id);
+  });
+}
+
+function handleViewportResize() {
+  var dr = desktopRect();
+  Object.keys(maximizedState).forEach(function(winId) {
+    if (!maximizedState[winId]) return;
+    var w = document.getElementById(winId);
+    if (!w) return;
+    w.style.width = dr.width + 'px';
+    w.style.maxHeight = (dr.height - TASKBAR_H) + 'px';
+  });
+  if (!mainMinimized && !mainMaximized) {
+    if (!mainUserMoved) centerMainWindow(false);
+    else {
+      var w = document.getElementById('mainWindow');
+      if (w && w.style.display !== 'none') {
+        var state = captureWindowState(w);
+        var maxTop = dr.height - TASKBAR_H - state.height;
+        state.left = Math.min(Math.max(0, state.left), dr.width - state.width);
+        state.top = Math.min(Math.max(0, state.top), maxTop);
+        applyWindowState(w, state);
+        saveWindowPosition('mainWindow');
+      }
+    }
+  }
+  clampOpenWindows();
+}
+
+var resizeTimer;
+window.addEventListener('resize', function() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(handleViewportResize, 120);
+});
 
 /* ── CLOCK ── */
 function updateClock() {
@@ -759,6 +1065,13 @@ function updateClock() {
 }
 updateClock();
 setInterval(updateClock, 15000);
+
+window.addEventListener('load', function() {
+  centerMainWindow(false);
+  var mw = document.getElementById('mainWindow');
+  mw.classList.add('ready', 'window-opening');
+  setTimeout(function() { mw.classList.remove('window-opening'); }, 320);
+});
 
 setTimeout(function() { document.getElementById('mainProgress').style.width = '72%'; }, 300);
 </script>
