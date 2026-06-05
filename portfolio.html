@@ -76,7 +76,7 @@
     animation: windowPop 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
   }
   @keyframes windowPop {
-    0%  { transform: translate(-50%,-50%) scale(0.55); opacity:0; }
+    0%   { transform: translate(-50%,-50%) scale(0.55); opacity:0; }
     100%{ transform: translate(-50%,-50%) scale(1);    opacity:1; }
   }
 
@@ -87,7 +87,7 @@
     animation: subPop 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
   }
   @keyframes subPop {
-    0%  { transform: scale(0.55); opacity:0; }
+    0%   { transform: scale(0.55); opacity:0; }
     100%{ transform: scale(1);    opacity:1; }
   }
 
@@ -96,21 +96,21 @@
     animation: minimizeAnim 0.22s cubic-bezier(0.55,0.085,0.68,0.53) forwards !important;
   }
   @keyframes minimizeAnim {
-    0%   { transform: scale(1) translateY(0); opacity:1; }
+    0%    { transform: scale(1) translateY(0); opacity:1; }
     100% { transform: scale(0.3) translateY(300px); opacity:0; }
   }
   .minimizing-main {
     animation: minimizeMainAnim 0.22s cubic-bezier(0.55,0.085,0.68,0.53) forwards !important;
   }
   @keyframes minimizeMainAnim {
-    0%   { transform: translate(-50%,-50%) scale(1); opacity:1; }
+    0%    { transform: translate(-50%,-50%) scale(1); opacity:1; }
     100% { transform: translate(-50%,-50%) scale(0.3) translateY(300px); opacity:0; }
   }
   .restoring {
     animation: restoreAnim 0.25s cubic-bezier(0.175,0.885,0.32,1.275) forwards !important;
   }
   @keyframes restoreAnim {
-    0%   { transform: scale(0.3) translateY(300px); opacity:0; }
+    0%    { transform: scale(0.3) translateY(300px); opacity:0; }
     100% { transform: scale(1) translateY(0); opacity:1; }
   }
 
@@ -266,7 +266,6 @@
 <body>
 <div class="desktop" id="desktop">
 
-  <!-- BIG WAVE BACKGROUND -->
   <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <path d="M -100 0 C 200 -40, 500 200, 600 350 C 700 500, 600 650, 800 700 C 1000 750, 1300 600, 1540 700 L 1540 0 Z" fill="#15317E" opacity="0.1"/>
     <path d="M -100 900 C 150 820, 400 720, 600 780 C 800 840, 950 920, 1200 860 C 1350 820, 1440 780, 1540 800 L 1540 900 Z" fill="#C3CDE6" opacity="0.6"/>
@@ -275,7 +274,6 @@
     <path d="M -100 400 C 300 300, 550 500, 850 420 C 1150 340, 1350 200, 1540 300 L 1540 520 C 1300 420, 1100 560, 800 600 C 500 640, 250 480, -100 560 Z" fill="#C3CDE6" opacity="0.2"/>
   </svg>
 
-  <!-- LEFT ICON RAIL -->
   <div class="icons-rail">
     <div class="desktop-icon" onclick="openWindow('resume')">
       <div class="icon-img"><svg viewBox="0 0 54 54"><rect x="9" y="4" width="30" height="40" rx="2"/><line x1="15" y1="15" x2="33" y2="15"/><line x1="15" y1="22" x2="33" y2="22"/><line x1="15" y1="29" x2="25" y2="29"/><polygon points="34,30 44,39 40,43 30,34"/></svg></div>
@@ -299,7 +297,6 @@
     </div>
   </div>
 
-  <!-- MAIN WINDOW -->
   <div class="main-window" id="mainWindow">
     <div class="titlebar" onmousedown="startDrag(event,'mainWindow')">
       <div class="titlebar-dots">
@@ -315,10 +312,10 @@
           <svg viewBox="0 0 88 88"><circle cx="44" cy="32" r="18"/><path d="M13 80c0-18 14-29 31-29s31 11 31 29"/></svg>
         </div>
         <div class="main-text">
-          <h1>Your Name<span class="cursor-blink"></span></h1>
-          <div class="subtitle">// designer · developer · creative</div>
-          <p>Building things at the intersection of design and code. Currently open to new opportunities.</p>
-          <p style="margin-top:9px">Based in Berlin, DE 🌍</p>
+          <h1>Komail Yusufzade<span class="cursor-blink"></span></h1>
+          <div class="subtitle">// developer · student · creative</div>
+          <p>Building things at the intersection of code and intelligence. Currently open to new opportunities.</p>
+          <p style="margin-top:9px">Based in Hamburg, DE 🌍</p>
         </div>
       </div>
       <div class="progress-bar-wrap">
@@ -350,7 +347,6 @@
     </div>
   </div>
 
-  <!-- TASKBAR -->
   <div class="taskbar" id="taskbar">
     <div class="taskbar-time" id="clock">00:00</div>
   </div>
@@ -452,24 +448,28 @@ var content = {
     html: `<div class="sub-content">
       <h2>Curriculum Vitae</h2>
       <div class="entry">
-        <div class="entry-title">Senior Designer @ Studio XYZ</div>
-        <div class="entry-sub">2022 – present · Berlin</div>
-        <div class="entry-desc">Led visual identity for 12+ brands. Managed design system across 3 products.</div>
+        <div class="entry-title">Application Developer @ DPS Engineering</div>
+        <div class="entry-sub">2025 – present · Hamburg</div>
+        <div class="entry-desc">Developed scalable applications and automated backend workflows by extending platforms with custom C#, JavaScript, and PowerFX logic. Optimized complex relational data models and integrated external data sources via SQL and APIs.</div>
       </div>
       <div class="entry">
-        <div class="entry-title">UI Designer @ Agency ABC</div>
-        <div class="entry-sub">2020 – 2022 · Remote</div>
-        <div class="entry-desc">Designed responsive web apps and mobile interfaces.</div>
+        <div class="entry-title">IT-Support @ Imperium Auto Inc.</div>
+        <div class="entry-sub">2021 – 2024 · Brampton, Ontario</div>
+        <div class="entry-desc">Managed the installation, configuration, and maintenance of core computer and network systems. Handled advanced technical troubleshooting for software applications while coordinating operational workflows and client inquiries.</div>
       </div>
       <div class="entry">
-        <div class="entry-title">B.A. Communication Design</div>
-        <div class="entry-sub">2016 – 2020 · University of Arts</div>
+        <div class="entry-title">B.Sc. Computer Science</div>
+        <div class="entry-sub">2024 – 2027 · IU Internationale Hochschule</div>
+      </div>
+      <div class="entry">
+        <div class="entry-title">B.Sc. Computer Science (Transfer)</div>
+        <div class="entry-sub">2023 – 2024 · Sheridan College</div>
       </div>
       <div style="margin-top:18px;border-top:1px solid #C3CDE6;padding-top:14px">
-        <div class="skill-bar"><span class="skill-name">Figma</span><div class="skill-track"><div class="skill-fill" style="width:90%"></div></div></div>
-        <div class="skill-bar"><span class="skill-name">React</span><div class="skill-track"><div class="skill-fill" style="width:75%"></div></div></div>
-        <div class="skill-bar"><span class="skill-name">CSS / HTML</span><div class="skill-track"><div class="skill-fill" style="width:85%"></div></div></div>
-        <div class="skill-bar"><span class="skill-name">Illustration</span><div class="skill-track"><div class="skill-fill" style="width:70%"></div></div></div>
+        <div class="skill-bar"><span class="skill-name">C# / .NET</span><div class="skill-track"><div class="skill-fill" style="width:85%"></div></div></div>
+        <div class="skill-bar"><span class="skill-name">JavaScript</span><div class="skill-track"><div class="skill-fill" style="width:80%"></div></div></div>
+        <div class="skill-bar"><span class="skill-name">PowerFX</span><div class="skill-track"><div class="skill-fill" style="width:90%"></div></div></div>
+        <div class="skill-bar"><span class="skill-name">SQL / APIs</span><div class="skill-track"><div class="skill-fill" style="width:85%"></div></div></div>
       </div>
       <button class="retro-btn" style="margin-top:16px;width:100%">⬇ Download PDF</button>
     </div>`
