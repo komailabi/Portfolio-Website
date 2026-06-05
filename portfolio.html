@@ -32,11 +32,17 @@
   /* ── ICON RAIL ── */
   .icons-rail {
     position: absolute;
-    left: 28px; top: 50%;
-    transform: translateY(-50%);
+    left: 28px;
+    top: 0; bottom: 34px; /* full height minus taskbar */
     display: flex; flex-direction: column;
-    gap: 24px; z-index: 2;
+    justify-content: center; /* vertically centered with equal spacing */
+    gap: 0;
+    z-index: 2;
+    padding: 40px 0;
   }
+  /* equal space distribution */
+  .icons-rail { justify-content: space-evenly; }
+
   .desktop-icon {
     display: flex; flex-direction: column;
     align-items: center; gap: 5px;
@@ -51,18 +57,21 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px; text-align: center;
     color: #1a1a1a; line-height: 1.2;
-    background: rgba(246,240,230,0.88);
+    background: rgba(246,240,230,0.92);
     padding: 1px 4px;
   }
 
-  /* ── MAIN WINDOW ── */
+  /* ── WINDOW BASE ── */
+  .main-window, .sub-window {
+    background: #F6F0E6;
+    border: 2px solid #1a1a1a;
+    box-shadow: 6px 6px 0 #1a1a1a;
+  }
+
   .main-window {
     position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     width: 680px;
-    background: #ddd6c8;
-    border: 2px solid #1a1a1a;
-    box-shadow: 6px 6px 0 #1a1a1a;
     z-index: 3;
     animation: windowPop 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
   }
@@ -71,12 +80,8 @@
     100%{ transform: translate(-50%,-50%) scale(1);    opacity:1; }
   }
 
-  /* ── SUB WINDOWS ── */
   .sub-window {
     position: absolute;
-    background: #ddd6c8;
-    border: 2px solid #1a1a1a;
-    box-shadow: 6px 6px 0 #1a1a1a;
     width: 600px;
     z-index: 10;
     animation: subPop 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
@@ -86,10 +91,39 @@
     100%{ transform: scale(1);    opacity:1; }
   }
 
-  /* minimized state */
-  .sub-window.minimized .window-body { display: none; }
-  .main-window.minimized .window-body { display: none; }
+  /* ── MINIMIZE ANIMATION ── */
+  .minimizing {
+    animation: minimizeAnim 0.22s cubic-bezier(0.55,0.085,0.68,0.53) forwards !important;
+  }
+  @keyframes minimizeAnim {
+    0%   { transform: scale(1) translateY(0); opacity:1; }
+    100% { transform: scale(0.3) translateY(300px); opacity:0; }
+  }
+  .minimizing-main {
+    animation: minimizeMainAnim 0.22s cubic-bezier(0.55,0.085,0.68,0.53) forwards !important;
+  }
+  @keyframes minimizeMainAnim {
+    0%   { transform: translate(-50%,-50%) scale(1); opacity:1; }
+    100% { transform: translate(-50%,-50%) scale(0.3) translateY(300px); opacity:0; }
+  }
+  .restoring {
+    animation: restoreAnim 0.25s cubic-bezier(0.175,0.885,0.32,1.275) forwards !important;
+  }
+  @keyframes restoreAnim {
+    0%   { transform: scale(0.3) translateY(300px); opacity:0; }
+    100% { transform: scale(1) translateY(0); opacity:1; }
+  }
 
+  /* ── MAXIMIZE ANIMATION ── */
+  .maximizing {
+    animation: maximizeAnim 0.2s ease-out forwards !important;
+  }
+  @keyframes maximizeAnim {
+    0%   { opacity:0.5; }
+    100% { opacity:1; }
+  }
+
+  /* ── CLOSE ANIMATIONS ── */
   .window-closing { animation: winClose 0.2s ease forwards !important; }
   @keyframes winClose { 0%{transform:scale(1);opacity:1} 100%{transform:scale(0.45);opacity:0} }
   .main-closing { animation: mainClose 0.2s ease forwards !important; }
@@ -105,20 +139,18 @@
     display: flex; align-items: center; gap: 10px;
     cursor: move;
   }
-  .titlebar-dots { display: flex; gap: 6px; }
+  .titlebar-dots { display: flex; gap: 7px; align-items: center; }
   .dot {
     width: 14px; height: 14px; border-radius: 50%;
-    border: 1.5px solid #555;
-    background: #ddd6c8;
-    cursor: pointer; transition: background 0.12s;
-    position: relative;
+    cursor: pointer; transition: filter 0.12s;
+    flex-shrink: 0;
   }
-  .dot.close { background: #ff5f57; border-color: #e0443e; }
-  .dot.min   { background: #ffbd2e; border-color: #dfa023; }
-  .dot.max   { background: #28c940; border-color: #1aab29; }
-  .dot.close:hover { background: #ee0055; }
-  .dot.min:hover   { background: #f5a800; }
-  .dot.max:hover   { background: #00b020; }
+  .dot.close { background: #ff5f57; }
+  .dot.min   { background: #ffbd2e; }
+  .dot.max   { background: #28c940; }
+  .dot.close:hover { filter: brightness(0.8); }
+  .dot.min:hover   { filter: brightness(0.8); }
+  .dot.max:hover   { filter: brightness(0.8); }
   .titlebar-title {
     flex: 1; text-align: center;
     font-family: 'IBM Plex Mono', monospace;
@@ -146,20 +178,20 @@
   .progress-bar-wrap {
     margin-top: 22px;
     border: 1.5px solid #1a1a1a;
-    height: 17px; background: #F6F0E6; overflow: hidden;
+    height: 17px; background: #ede7d9; overflow: hidden;
   }
   .progress-bar-fill {
     height: 100%;
     background: repeating-linear-gradient(90deg,#15317E 0,#15317E 9px,transparent 9px,transparent 12px);
     width: 0%; transition: width 2.2s ease-out;
   }
-  .progress-label { font-size: 10px; color: #666; margin-top: 5px; }
+  .progress-label { font-size: 10px; color: #888; margin-top: 5px; }
 
   /* ── DOCK ── */
   .dock {
     display: flex; justify-content: center;
     gap: 26px; margin-top: 22px; padding-top: 18px;
-    border-top: 1.5px solid #1a1a1a;
+    border-top: 1.5px solid #d0c8b8;
   }
   .dock-icon {
     display: flex; flex-direction: column;
@@ -169,14 +201,14 @@
   .dock-icon:hover { transform: translateY(-7px) scale(1.18); }
   .dock-icon:active { transform: scale(0.95); }
   .dock-icon svg { width: 40px; height: 40px; stroke: #1a1a1a; stroke-width: 1.5; fill: none; }
-  .dock-label { font-size: 10px; color: #333; text-align: center; font-family: 'IBM Plex Mono'; max-width: 64px; }
+  .dock-label { font-size: 10px; color: #444; text-align: center; font-family: 'IBM Plex Mono'; max-width: 64px; }
 
   /* ── BUTTONS ── */
   .retro-btn {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px; padding: 8px 20px;
     border: 1.5px solid #1a1a1a;
-    background: #F6F0E6;
+    background: #ede7d9;
     cursor: pointer; color: #1a1a1a;
     transition: all 0.1s; letter-spacing: 0.04em;
   }
@@ -193,14 +225,14 @@
 
   .skill-bar { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
   .skill-name { width:100px; font-size:12px; }
-  .skill-track { flex:1; height:11px; border:1.5px solid #1a1a1a; background:#F6F0E6; }
+  .skill-track { flex:1; height:11px; border:1.5px solid #1a1a1a; background:#ede7d9; }
   .skill-fill { height:100%; background:repeating-linear-gradient(90deg,#15317E 0,#15317E 5px,transparent 5px,transparent 7px); }
 
   .contact-field { margin-bottom:14px; }
   .contact-label { font-size:11px; color:#15317E; margin-bottom:3px; letter-spacing:0.08em; font-weight:500; }
   .contact-val { font-size:13px; color:#1a1a1a; border-bottom:1px solid #C3CDE6; padding-bottom:4px; }
 
-  .project-item { border:1.5px solid #1a1a1a; padding:12px; margin-bottom:12px; background:#F6F0E6; }
+  .project-item { border:1.5px solid #d0c8b8; padding:12px; margin-bottom:12px; background:#ede7d9; }
   .project-name { font-size:14px; font-weight:500; }
   .project-desc { font-size:11px; color:#555; margin-top:4px; line-height:1.55; }
   .project-tags { display:flex; gap:6px; margin-top:7px; flex-wrap:wrap; }
@@ -211,18 +243,17 @@
     position: absolute; bottom:0; left:0; right:0;
     height: 34px; background: #15317E;
     display: flex; align-items: center;
-    padding: 0 16px; z-index: 20;
-    gap: 10px;
+    padding: 0 16px; z-index: 20; gap: 10px;
   }
   .taskbar-btn {
     font-family: 'IBM Plex Mono'; font-size: 11px;
     color: #F6F0E6; background: transparent;
     border: 1px solid rgba(246,240,230,0.4);
     padding: 2px 10px; cursor: pointer;
-    transition: background 0.1s;
+    transition: background 0.1s; white-space: nowrap;
   }
   .taskbar-btn:hover { background: rgba(246,240,230,0.15); }
-  .taskbar-btn.active { background: rgba(246,240,230,0.2); border-color: #F6F0E6; }
+  .taskbar-btn.active { background: rgba(246,240,230,0.22); border-color: #F6F0E6; }
   .taskbar-time { margin-left: auto; font-size: 11px; color: #C3CDE6; font-family: 'IBM Plex Mono'; }
 
   .cursor-blink { display:inline-block; width:8px; height:16px; background:#1a1a1a; animation:blink 1s infinite; vertical-align:middle; margin-left:3px; }
@@ -237,83 +268,33 @@
 
   <!-- BIG WAVE BACKGROUND -->
   <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-    <!-- Wave layer 1: large dark navy sweep from top-left to bottom-right -->
-    <path d="M -100 0
-             C 200 -40, 500 200, 600 350
-             C 700 500, 600 650, 800 700
-             C 1000 750, 1300 600, 1540 700
-             L 1540 0 Z"
-          fill="#15317E" opacity="0.12"/>
-
-    <!-- Wave layer 2: medium light blue, bottom sweep -->
-    <path d="M -100 900
-             C 150 820, 400 720, 600 780
-             C 800 840, 950 920, 1200 860
-             C 1350 820, 1440 780, 1540 800
-             L 1540 900 Z"
-          fill="#C3CDE6" opacity="0.6"/>
-
-    <!-- Wave layer 3: big mid-tone blue, top-right corner -->
-    <path d="M 800 -100
-             C 1000 0, 1200 80, 1350 200
-             C 1500 320, 1580 420, 1540 0 Z"
-          fill="#C3CDE6" opacity="0.55"/>
-
-    <!-- Wave layer 4: dark navy, bottom-left accent -->
-    <path d="M -100 600
-             C 100 560, 250 620, 320 700
-             C 390 780, 300 880, 100 900
-             L -100 900 Z"
-          fill="#15317E" opacity="0.18"/>
-
-    <!-- Wave layer 5: large soft wave cutting through middle -->
-    <path d="M -100 400
-             C 300 300, 550 500, 850 420
-             C 1150 340, 1350 200, 1540 300
-             L 1540 520
-             C 1300 420, 1100 560, 800 600
-             C 500 640, 250 480, -100 560 Z"
-          fill="#C3CDE6" opacity="0.22"/>
-
-    <!-- Wave layer 6: subtle dark accent top -->
-    <path d="M -100 -100
-             C 200 50, 400 -20, 700 80
-             C 900 150, 1000 60, 1200 100
-             C 1350 130, 1450 80, 1540 120
-             L 1540 -100 Z"
-          fill="#15317E" opacity="0.1"/>
+    <path d="M -100 0 C 200 -40, 500 200, 600 350 C 700 500, 600 650, 800 700 C 1000 750, 1300 600, 1540 700 L 1540 0 Z" fill="#15317E" opacity="0.1"/>
+    <path d="M -100 900 C 150 820, 400 720, 600 780 C 800 840, 950 920, 1200 860 C 1350 820, 1440 780, 1540 800 L 1540 900 Z" fill="#C3CDE6" opacity="0.6"/>
+    <path d="M 800 -100 C 1000 0, 1200 80, 1350 200 C 1500 320, 1580 420, 1540 0 Z" fill="#C3CDE6" opacity="0.5"/>
+    <path d="M -100 600 C 100 560, 250 620, 320 700 C 390 780, 300 880, 100 900 L -100 900 Z" fill="#15317E" opacity="0.15"/>
+    <path d="M -100 400 C 300 300, 550 500, 850 420 C 1150 340, 1350 200, 1540 300 L 1540 520 C 1300 420, 1100 560, 800 600 C 500 640, 250 480, -100 560 Z" fill="#C3CDE6" opacity="0.2"/>
   </svg>
 
   <!-- LEFT ICON RAIL -->
   <div class="icons-rail">
     <div class="desktop-icon" onclick="openWindow('resume')">
-      <div class="icon-img">
-        <svg viewBox="0 0 54 54"><rect x="9" y="4" width="30" height="40" rx="2"/><line x1="15" y1="15" x2="33" y2="15"/><line x1="15" y1="22" x2="33" y2="22"/><line x1="15" y1="29" x2="25" y2="29"/><polygon points="34,30 44,39 40,43 30,34"/></svg>
-      </div>
+      <div class="icon-img"><svg viewBox="0 0 54 54"><rect x="9" y="4" width="30" height="40" rx="2"/><line x1="15" y1="15" x2="33" y2="15"/><line x1="15" y1="22" x2="33" y2="22"/><line x1="15" y1="29" x2="25" y2="29"/><polygon points="34,30 44,39 40,43 30,34"/></svg></div>
       <span class="icon-label">MyResume</span>
     </div>
     <div class="desktop-icon" onclick="openWindow('projects')">
-      <div class="icon-img">
-        <svg viewBox="0 0 54 54"><rect x="4" y="12" width="46" height="30" rx="2"/><polyline points="4,20 50,20"/><circle cx="11" cy="16" r="2.5" fill="#1a1a1a"/><circle cx="19" cy="16" r="2.5" fill="#1a1a1a"/><circle cx="27" cy="16" r="2.5" fill="#1a1a1a"/><rect x="10" y="27" width="14" height="9"/><rect x="30" y="27" width="14" height="9"/></svg>
-      </div>
+      <div class="icon-img"><svg viewBox="0 0 54 54"><rect x="4" y="12" width="46" height="30" rx="2"/><polyline points="4,20 50,20"/><circle cx="11" cy="16" r="2.5" fill="#1a1a1a"/><circle cx="19" cy="16" r="2.5" fill="#1a1a1a"/><circle cx="27" cy="16" r="2.5" fill="#1a1a1a"/><rect x="10" y="27" width="14" height="9"/><rect x="30" y="27" width="14" height="9"/></svg></div>
       <span class="icon-label">My_Projects</span>
     </div>
     <div class="desktop-icon" onclick="openWindow('about')">
-      <div class="icon-img">
-        <svg viewBox="0 0 54 54"><rect x="7" y="4" width="40" height="46" rx="2"/><circle cx="27" cy="18" r="6"/><path d="M13 44c0-8 6-13 14-13s14 5 14 13"/></svg>
-      </div>
+      <div class="icon-img"><svg viewBox="0 0 54 54"><rect x="7" y="4" width="40" height="46" rx="2"/><circle cx="27" cy="18" r="6"/><path d="M13 44c0-8 6-13 14-13s14 5 14 13"/></svg></div>
       <span class="icon-label">AboutMe.exe</span>
     </div>
     <div class="desktop-icon" onclick="openWindow('github')">
-      <div class="icon-img">
-        <svg viewBox="0 0 54 54"><path d="M27 7C16 7 7 16 7 27c0 9 6 17 14 20 1 .2 1.4-.5 1.4-1v-3.6c-5.9 1.2-7.2-2.9-7.2-2.9-1-2.4-2.4-3.1-2.4-3.1-1.9-1.3.1-1.3.1-1.3 2.1.1 3.3 2.2 3.3 2.2 1.9 3.3 5 2.3 6.2 1.7.2-1.3.8-2.2 1.4-2.8-4.7-.5-9.7-2.4-9.7-10.5 0-2.3.8-4.2 2.2-5.7-.2-.6-1-2.7.2-5.6 0 0 1.8-.6 6 2.2 1.7-.5 3.6-.7 5.5-.7s3.8.2 5.5.8c4.2-2.8 6-2.2 6-2.2 1.2 2.9.4 5 .2 5.6 1.4 1.5 2.2 3.4 2.2 5.7 0 8.1-5 9.9-9.8 10.4.8.7 1.5 2 1.5 4v6c0 .6.4 1.2 1.5 1C41 44 47 36 47 27 47 16 38 7 27 7z"/></svg>
-      </div>
+      <div class="icon-img"><svg viewBox="0 0 54 54"><path d="M27 7C16 7 7 16 7 27c0 9 6 17 14 20 1 .2 1.4-.5 1.4-1v-3.6c-5.9 1.2-7.2-2.9-7.2-2.9-1-2.4-2.4-3.1-2.4-3.1-1.9-1.3.1-1.3.1-1.3 2.1.1 3.3 2.2 3.3 2.2 1.9 3.3 5 2.3 6.2 1.7.2-1.3.8-2.2 1.4-2.8-4.7-.5-9.7-2.4-9.7-10.5 0-2.3.8-4.2 2.2-5.7-.2-.6-1-2.7.2-5.6 0 0 1.8-.6 6 2.2 1.7-.5 3.6-.7 5.5-.7s3.8.2 5.5.8c4.2-2.8 6-2.2 6-2.2 1.2 2.9.4 5 .2 5.6 1.4 1.5 2.2 3.4 2.2 5.7 0 8.1-5 9.9-9.8 10.4.8.7 1.5 2 1.5 4v6c0 .6.4 1.2 1.5 1C41 44 47 36 47 27 47 16 38 7 27 7z"/></svg></div>
       <span class="icon-label">GitHub.lnk</span>
     </div>
     <div class="desktop-icon" onclick="openWindow('contact')">
-      <div class="icon-img">
-        <svg viewBox="0 0 54 54"><rect x="5" y="12" width="44" height="30" rx="2"/><polyline points="5,12 27,30 49,12"/></svg>
-      </div>
+      <div class="icon-img"><svg viewBox="0 0 54 54"><rect x="5" y="12" width="44" height="30" rx="2"/><polyline points="5,12 27,30 49,12"/></svg></div>
       <span class="icon-label">Contact_Me</span>
     </div>
   </div>
@@ -322,8 +303,8 @@
   <div class="main-window" id="mainWindow">
     <div class="titlebar" onmousedown="startDrag(event,'mainWindow')">
       <div class="titlebar-dots">
-        <div class="dot close" title="Close" onclick="closeMainWindow()"></div>
-        <div class="dot min"   title="Minimize" onclick="toggleMinimize('mainWindow')"></div>
+        <div class="dot close" title="Close"    onclick="closeMainWindow()"></div>
+        <div class="dot min"   title="Minimize" onclick="minimizeMain()"></div>
         <div class="dot max"   title="Maximize" onclick="toggleMaximize('mainWindow')"></div>
       </div>
       <div class="titlebar-title">Welcome.exe — Running</div>
@@ -376,12 +357,94 @@
 </div>
 
 <script>
+/* ── AUDIO ENGINE (Web Audio API — no files needed) ── */
+var AudioCtx = window.AudioContext || window.webkitAudioContext;
+var actx = null;
+function getACtx() {
+  if (!actx) actx = new AudioCtx();
+  return actx;
+}
+
+function playOpen() {
+  try {
+    var ctx = getACtx();
+    // Two quick ascending tones — "ding-ding"
+    [0, 0.08].forEach(function(delay, i) {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(i === 0 ? 520 : 780, ctx.currentTime + delay);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.18);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.18);
+    });
+  } catch(e) {}
+}
+
+function playClose() {
+  try {
+    var ctx = getACtx();
+    // Descending soft "poof"
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.22);
+  } catch(e) {}
+}
+
+function playMinimize() {
+  try {
+    var ctx = getACtx();
+    // Quick descending chirp
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.15);
+  } catch(e) {}
+}
+
+function playMaximize() {
+  try {
+    var ctx = getACtx();
+    // Short "whoosh" up
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(300, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.18);
+  } catch(e) {}
+}
+
+/* ── STATE ── */
 var windows = {};
 var zBase = 10;
-var maximized = {};
-var minimized = {};
+var maximizedState = {};
+var minimizedState = {};
 var savedPositions = {};
+var mainMinimized = false;
+var mainMaximized = false;
+var mainSavedPos = null;
 
+/* ── WINDOW CONTENT ── */
 var content = {
   resume: {
     title: 'MyResume.pdf',
@@ -440,7 +503,7 @@ var content = {
       <h2>About Me</h2>
       <p style="margin-bottom:14px">Hi! I'm [Your Name], a designer & developer based in Berlin. I care deeply about crafting digital experiences that feel both beautiful and intuitive.</p>
       <p style="margin-bottom:14px">When I'm not pushing pixels I'm probably on my bike, at a record store, or trying to make sourdough work.</p>
-      <div style="border:1.5px solid #C3CDE6;padding:14px;background:#F6F0E6;margin-top:14px">
+      <div style="border:1.5px solid #C3CDE6;padding:14px;background:#ede7d9;margin-top:14px">
         <div style="font-size:11px;color:#15317E;margin-bottom:8px;font-weight:500">// fun_facts.txt</div>
         <div style="margin-bottom:5px">☕ Coffee: 3–4 cups/day</div>
         <div style="margin-bottom:5px">🎵 Listening to: Jazz & ambient</div>
@@ -480,18 +543,18 @@ var content = {
       <div class="contact-field"><div class="contact-label">LOCATION</div><div class="contact-val">Berlin, Germany 🇩🇪</div></div>
       <div style="border-top:1px solid #C3CDE6;margin-top:16px;padding-top:14px">
         <div style="font-size:11px;color:#15317E;margin-bottom:9px;font-weight:500">// send a message</div>
-        <input placeholder="Your message..." style="width:100%;background:#F6F0E6;border:1.5px solid #C3CDE6;padding:9px;font-size:12px;color:#1a1a1a;margin-bottom:9px;display:block">
+        <input placeholder="Your message..." style="width:100%;background:#ede7d9;border:1.5px solid #C3CDE6;padding:9px;font-size:12px;color:#1a1a1a;margin-bottom:9px;display:block">
         <button class="retro-btn" style="width:100%">Send Message ✉</button>
       </div>
     </div>`
   }
 };
 
-/* ── OPEN WINDOW ── */
+/* ── OPEN ── */
 function openWindow(id) {
+  playOpen();
   if (windows[id]) {
-    // if minimized, restore it
-    if (minimized[id]) toggleMinimize(id);
+    if (minimizedState[id]) restoreWindow(id);
     windows[id].style.zIndex = ++zBase;
     return;
   }
@@ -506,9 +569,9 @@ function openWindow(id) {
   w.innerHTML = `
     <div class="titlebar" onmousedown="startDrag(event,'win_${id}')">
       <div class="titlebar-dots">
-        <div class="dot close" title="Close"    onclick="closeWindow('${id}')"></div>
-        <div class="dot min"   title="Minimize" onclick="toggleMinimize('win_${id}')"></div>
-        <div class="dot max"   title="Maximize" onclick="toggleMaximize('win_${id}')"></div>
+        <div class="dot close" onclick="closeWindow('${id}')"></div>
+        <div class="dot min"   onclick="minimizeWindow('${id}')"></div>
+        <div class="dot max"   onclick="toggleMaximize('win_${id}')"></div>
       </div>
       <div class="titlebar-title">${c.title}</div>
     </div>
@@ -517,119 +580,162 @@ function openWindow(id) {
   document.getElementById('desktop').appendChild(w);
   windows[id] = w;
   w.addEventListener('mousedown', function() { w.style.zIndex = ++zBase; });
-
-  // add taskbar button
   addTaskbarBtn(id, c.title);
 }
 
 /* ── CLOSE ── */
 function closeWindow(id) {
+  playClose();
   var w = windows[id];
   if (!w) return;
   w.classList.add('window-closing');
   setTimeout(function() {
     w.remove();
     delete windows[id];
-    delete minimized[id];
-    delete maximized[id];
+    delete minimizedState[id];
+    delete maximizedState['win_' + id];
     removeTaskbarBtn(id);
   }, 200);
 }
 
 function closeMainWindow() {
+  playClose();
   var w = document.getElementById('mainWindow');
   w.classList.add('main-closing');
   setTimeout(function() { w.style.display = 'none'; }, 200);
-  removeTaskbarBtn('main');
 }
 
-/* ── MINIMIZE ── */
-function toggleMinimize(winId) {
-  var w = document.getElementById(winId);
-  if (!w) return;
-  var body = document.getElementById(winId + '-body');
-  if (!body) return;
-
-  if (minimized[winId]) {
-    // restore
-    body.style.display = '';
-    minimized[winId] = false;
-    var btn = document.getElementById('tbtn_' + winId);
-    if (btn) btn.classList.remove('active');
-  } else {
-    // minimize
-    body.style.display = 'none';
-    minimized[winId] = true;
-    var btn = document.getElementById('tbtn_' + winId);
+/* ── MINIMIZE (with animation) ── */
+function minimizeWindow(id) {
+  playMinimize();
+  var w = windows[id];
+  if (!w || minimizedState[id]) return;
+  minimizedState[id] = true;
+  w.classList.add('minimizing');
+  setTimeout(function() {
+    w.style.display = 'none';
+    w.classList.remove('minimizing');
+    var btn = document.getElementById('tbtn_' + id);
     if (btn) btn.classList.add('active');
-  }
+  }, 220);
+}
+
+function restoreWindow(id) {
+  playOpen();
+  var w = windows[id];
+  if (!w) return;
+  minimizedState[id] = false;
+  w.style.display = '';
+  w.style.zIndex = ++zBase;
+  w.classList.add('restoring');
+  setTimeout(function() { w.classList.remove('restoring'); }, 250);
+  var btn = document.getElementById('tbtn_' + id);
+  if (btn) btn.classList.remove('active');
+}
+
+function minimizeMain() {
+  playMinimize();
+  var w = document.getElementById('mainWindow');
+  if (mainMinimized) return;
+  mainMinimized = true;
+  w.classList.add('minimizing-main');
+  setTimeout(function() {
+    w.style.display = 'none';
+    w.classList.remove('minimizing-main');
+    addMainTaskbarBtn();
+  }, 220);
+}
+
+function restoreMain() {
+  playOpen();
+  var w = document.getElementById('mainWindow');
+  mainMinimized = false;
+  w.style.display = '';
+  w.style.zIndex = ++zBase;
+  // re-apply centered transform if not maximized
+  if (!mainMaximized) w.style.transform = 'translate(-50%,-50%)';
+  w.classList.add('restoring');
+  setTimeout(function() { w.classList.remove('restoring'); }, 250);
+  removeTaskbarBtn('main');
 }
 
 /* ── MAXIMIZE ── */
 function toggleMaximize(winId) {
+  playMaximize();
   var w = document.getElementById(winId);
   if (!w) return;
+  var isMain = winId === 'mainWindow';
 
-  if (maximized[winId]) {
-    // restore saved position/size
+  if (maximizedState[winId]) {
+    // restore
     var s = savedPositions[winId];
     if (s) {
       w.style.top = s.top; w.style.left = s.left;
-      w.style.width = s.width; w.style.height = s.height;
-      w.style.transform = s.transform;
-      w.style.maxHeight = ''; w.style.overflowY = '';
+      w.style.width = s.width; w.style.maxHeight = '';
+      w.style.overflowY = '';
+      if (isMain) {
+        w.style.transform = 'translate(-50%,-50%)';
+      } else {
+        w.style.transform = 'none';
+      }
     }
-    maximized[winId] = false;
+    maximizedState[winId] = false;
   } else {
-    // save current
-    var rect = w.getBoundingClientRect();
     savedPositions[winId] = {
-      top: w.style.top, left: w.style.left,
-      width: w.style.width, height: w.style.height,
-      transform: w.style.transform
+      top: w.style.top, left: w.style.left, width: w.style.width
     };
-    // go full (minus taskbar)
     w.style.top = '0px'; w.style.left = '0px';
-    w.style.width = '100vw'; w.style.height = 'calc(100vh - 34px)';
-    w.style.transform = 'none';
+    w.style.width = '100vw';
     w.style.maxHeight = 'calc(100vh - 34px)';
     w.style.overflowY = 'auto';
+    w.style.transform = 'none';
     w.style.zIndex = ++zBase;
-    maximized[winId] = true;
+    w.classList.add('maximizing');
+    setTimeout(function() { w.classList.remove('maximizing'); }, 200);
+    maximizedState[winId] = true;
+    if (isMain) mainMaximized = true;
   }
 }
 
-/* ── TASKBAR BUTTONS ── */
+/* ── TASKBAR ── */
 function addTaskbarBtn(id, title) {
-  removeTaskbarBtn(id); // avoid dupes
+  removeTaskbarBtn(id);
   var bar = document.getElementById('taskbar');
   var clock = document.getElementById('clock');
   var btn = document.createElement('div');
   btn.className = 'taskbar-btn';
-  btn.id = 'tbtn_win_' + id;
-  btn.textContent = title.split(' ')[0];
+  btn.id = 'tbtn_' + id;
+  btn.textContent = title.split(/[\.\s–]/)[0];
   btn.onclick = function() {
-    var w = windows[id];
-    if (!w) return;
-    if (minimized['win_' + id]) {
-      toggleMinimize('win_' + id);
-    } else {
-      w.style.zIndex = ++zBase;
-    }
+    if (minimizedState[id]) restoreWindow(id);
+    else if (windows[id]) windows[id].style.zIndex = ++zBase;
   };
   bar.insertBefore(btn, clock);
 }
+
+function addMainTaskbarBtn() {
+  removeTaskbarBtn('main');
+  var bar = document.getElementById('taskbar');
+  var clock = document.getElementById('clock');
+  var btn = document.createElement('div');
+  btn.className = 'taskbar-btn active';
+  btn.id = 'tbtn_main';
+  btn.textContent = 'Welcome';
+  btn.onclick = restoreMain;
+  bar.insertBefore(btn, clock);
+}
+
 function removeTaskbarBtn(id) {
-  var el = document.getElementById('tbtn_win_' + id) || document.getElementById('tbtn_' + id);
+  var el = document.getElementById('tbtn_' + id);
   if (el) el.remove();
 }
 
 /* ── DRAG ── */
 var dragging = null, dragOx = 0, dragOy = 0;
 function startDrag(e, id) {
-  var w = document.getElementById(id);
-  if (!w || maximized[id]) return;
-  dragging = w;
+  if (maximizedState[id]) return;
+  dragging = document.getElementById(id);
+  if (!dragging) return;
   dragging.style.zIndex = ++zBase;
   var r = dragging.getBoundingClientRect();
   dragOx = e.clientX - r.left;
