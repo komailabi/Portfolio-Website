@@ -115,6 +115,12 @@
     max-width: calc(100vw - 32px);
     z-index: 10;
   }
+  .sub-window.resume-window {
+    width: clamp(340px, 30vw, 420px);
+  }
+  .resume-window .window-body {
+    padding: clamp(16px, 2vw, 22px);
+  }
 
   .window-opening {
     animation: windowOpen 0.32s var(--win-ease) both;
@@ -244,16 +250,54 @@
 
   /* ── SUB CONTENT ── */
   .sub-content { font-family:'IBM Plex Mono',monospace; font-size:13px; color:#1a1a1a; line-height:1.85; }
-  .sub-content h2 { font-family:'Special Elite',serif; font-size:22px; margin-bottom:16px; color:#15317E; }
-  .sub-content .entry { border-left:3px solid #15317E; padding-left:12px; margin-bottom:16px; }
-  .sub-content .entry-title { font-size:14px; font-weight:500; }
-  .sub-content .entry-sub { color:#15317E; font-size:11px; margin-top:2px; opacity:0.8; }
-  .sub-content .entry-desc { font-size:12px; margin-top:5px; color:#444; }
+  .sub-content h2 { font-family:'Special Elite',serif; font-size:20px; margin-bottom:12px; color:#15317E; }
+  .sub-content .entry { border-left:3px solid #15317E; padding-left:10px; margin-bottom:12px; }
+  .sub-content .entry-title { font-size:13px; font-weight:500; }
+  .sub-content .entry-sub { color:#15317E; font-size:10px; margin-top:2px; opacity:0.8; }
+  .sub-content .entry-desc { font-size:11px; margin-top:4px; color:#444; line-height:1.6; }
 
-  .skill-bar { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-  .skill-name { width:100px; font-size:12px; }
-  .skill-track { flex:1; height:11px; border:1.5px solid #1a1a1a; background:#ede7d9; }
-  .skill-fill { height:100%; background:repeating-linear-gradient(90deg,#15317E 0,#15317E 5px,transparent 5px,transparent 7px); }
+  .tech-stack {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #C3CDE6;
+  }
+  .tech-group { margin-bottom: 10px; }
+  .tech-group:last-child { margin-bottom: 0; }
+  .tech-group-label {
+    font-size: 9px;
+    color: #15317E;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .tech-bubbles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .tech-bubble {
+    font-size: 10px;
+    padding: 3px 8px;
+    border: 1px solid #15317E;
+    border-radius: 999px;
+    background: #C3CDE6;
+    color: #15317E;
+    cursor: default;
+    transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+  }
+  .tech-bubble:hover {
+    transform: translateY(-2px) scale(1.06);
+    background: #15317E;
+    color: #F6F0E6;
+    box-shadow: 0 2px 0 #1a1a1a;
+  }
+  .resume-dl-btn {
+    display: block;
+    margin-top: 14px;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+  }
 
   .contact-field { margin-bottom:14px; }
   .contact-label { font-size:11px; color:#15317E; margin-bottom:3px; letter-spacing:0.08em; font-weight:500; }
@@ -479,6 +523,28 @@ function playMaximize() {
   } catch(e) {}
 }
 
+var bubblePitch = 0;
+var lastBubbleSound = 0;
+function playBubbleHover() {
+  var now = Date.now();
+  if (now - lastBubbleSound < 70) return;
+  lastBubbleSound = now;
+  try {
+    var ctx = getACtx();
+    var notes = [523, 587, 659, 698, 784, 880];
+    bubblePitch = (bubblePitch + 1) % notes.length;
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(notes[bubblePitch], ctx.currentTime);
+    gain.gain.setValueAtTime(0.07, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.09);
+  } catch(e) {}
+}
+
 /* ── STATE ── */
 var windows = {};
 var zBase = 10;
@@ -496,18 +562,19 @@ var WIN_ANIM_MS = 280;
 var content = {
   resume: {
     title: 'MyResume.pdf',
-    pos: {top:'8%', left:'22%'},
+    pos: {top:'10%', left:'24%'},
+    compact: true,
     html: `<div class="sub-content">
       <h2>Curriculum Vitae</h2>
       <div class="entry">
         <div class="entry-title">Application Developer @ DPS Engineering</div>
         <div class="entry-sub">2025 – present · Hamburg</div>
-        <div class="entry-desc">Developed scalable applications and automated backend workflows by extending platforms with custom C#, JavaScript, and PowerFX logic. Optimized complex relational data models and integrated external data sources via SQL and APIs.</div>
+        <div class="entry-desc">Developed scalable applications and automated backend workflows with C#, JavaScript, and PowerFX.</div>
       </div>
       <div class="entry">
         <div class="entry-title">IT-Support @ Imperium Auto Inc.</div>
         <div class="entry-sub">2021 – 2024 · Brampton, Ontario</div>
-        <div class="entry-desc">Managed the installation, configuration, and maintenance of core computer and network systems. Handled advanced technical troubleshooting for software applications while coordinating operational workflows and client inquiries.</div>
+        <div class="entry-desc">Managed systems, networks, and technical troubleshooting across operational workflows.</div>
       </div>
       <div class="entry">
         <div class="entry-title">B.Sc. Computer Science</div>
@@ -517,13 +584,46 @@ var content = {
         <div class="entry-title">B.Sc. Computer Science (Transfer)</div>
         <div class="entry-sub">2023 – 2024 · Sheridan College</div>
       </div>
-      <div style="margin-top:18px;border-top:1px solid #C3CDE6;padding-top:14px">
-        <div class="skill-bar"><span class="skill-name">C# / .NET</span><div class="skill-track"><div class="skill-fill" style="width:85%"></div></div></div>
-        <div class="skill-bar"><span class="skill-name">JavaScript</span><div class="skill-track"><div class="skill-fill" style="width:80%"></div></div></div>
-        <div class="skill-bar"><span class="skill-name">PowerFX</span><div class="skill-track"><div class="skill-fill" style="width:90%"></div></div></div>
-        <div class="skill-bar"><span class="skill-name">SQL / APIs</span><div class="skill-track"><div class="skill-fill" style="width:85%"></div></div></div>
+      <div class="tech-stack">
+        <div class="tech-group">
+          <div class="tech-group-label">// programming_languages</div>
+          <div class="tech-bubbles">
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">C#</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Java</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Python</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">JavaScript</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">C</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <div class="tech-group-label">// web_dev_&_databases</div>
+          <div class="tech-bubbles">
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Next.js</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">HTML5/CSS3</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">SQL</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Microsoft Dataverse</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Firebase</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <div class="tech-group-label">// low-code_&_automation</div>
+          <div class="tech-bubbles">
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Power Apps</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Power Automate</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Power BI</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <div class="tech-group-label">// tools_&_methodologies</div>
+          <div class="tech-bubbles">
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Git/GitHub</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Microsoft Office</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Excel</span>
+            <span class="tech-bubble" onmouseenter="playBubbleHover()">Agile (Scrum)</span>
+          </div>
+        </div>
       </div>
-      <button class="retro-btn" style="margin-top:16px;width:100%">⬇ Download PDF</button>
+      <a href="resume.pdf" download="Komail_Yusufzade_Resume.pdf" class="retro-btn resume-dl-btn">⬇ Download PDF</a>
     </div>`
   },
   projects: {
@@ -810,7 +910,7 @@ function openWindow(id) {
   var c = content[id];
   if (!c) return;
   var w = document.createElement('div');
-  w.className = 'sub-window window-opening';
+  w.className = 'sub-window window-opening' + (c.compact ? ' resume-window' : '');
   w.id = 'win_' + id;
   w.style.zIndex = ++zBase;
   w.innerHTML = `
