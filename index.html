@@ -2,440 +2,363 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Portfolio OS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio OS — Komail Yusufzade</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
-  :root {
-    --taskbar-h: 34px;
-    --icon-col-w: clamp(76px, 7.2vmin, 96px);
-    --icon-img-size: clamp(62px, 6vmin, 74px);
-    --icon-svg-size: clamp(56px, 5.4vmin, 68px);
-    --main-window-w: clamp(500px, 42vw, 620px);
-    --sub-window-w: clamp(440px, 38vw, 560px);
-    --dock-gap: clamp(16px, 2.2vw, 26px);
-    --win-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'IBM Plex Mono', monospace;
+  cursor: default;
+  user-select: none;
+  background: #F6F0E6;
+}
 
-  body {
-    font-family: 'IBM Plex Mono', monospace;
-    height: 100vh; width: 100%;
-    overflow: hidden;
-    cursor: default;
-    user-select: none;
-  }
+.desktop {
+  position: relative;
+  width: 100vw; height: 100vh;
+  overflow: hidden;
+}
 
-  .desktop {
-    width: 100%; height: 100vh;
-    position: relative;
-    overflow: hidden;
-    background: #F6F0E6;
-  }
+.bg-svg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+}
 
-  .bg-svg {
+/* ════════════════════════════════════
+   ICON RAIL  — sized for 1920×1080
+════════════════════════════════════ */
+.icons-rail {
+  position: absolute;
+  left: 0; top: 0; bottom: 38px;
+  width: 130px;
+  display: flex; flex-direction: column;
+  justify-content: space-evenly; align-items: center;
+  padding: 36px 0; z-index: 2;
+}
+.desktop-icon {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  cursor: pointer; width: 104px;
+  transition: transform 0.14s;
+}
+.desktop-icon:hover  { transform: scale(1.1); }
+.desktop-icon:active { transform: scale(0.93); }
+.icon-img { width: 68px; height: 68px; display:flex; align-items:center; justify-content:center; }
+.icon-img svg { width: 62px; height: 62px; stroke: #1a1a1a; stroke-width: 1.5; fill: none; }
+.icon-label {
+  font-size: 12px; text-align: center; color: #1a1a1a;
+  line-height: 1.25; background: rgba(246,240,230,0.92);
+  padding: 2px 5px; max-width: 104px; word-break: break-word;
+}
+
+/* ════════════════════════════════════
+   TASKBAR
+════════════════════════════════════ */
+.taskbar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 38px; background: #15317E;
+  display: flex; align-items: center;
+  padding: 0 16px; z-index: 200; gap: 8px;
+}
+.taskbar-btn {
+  font-family: 'IBM Plex Mono'; font-size: 12px;
+  color: #F6F0E6; background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(246,240,230,0.4);
+  padding: 3px 12px; cursor: pointer;
+  transition: background 0.1s; white-space: nowrap;
+}
+.taskbar-btn:hover  { background: rgba(255,255,255,0.22); }
+.taskbar-btn.active { background: rgba(255,255,255,0.3); border-color: #F6F0E6; }
+.taskbar-time { margin-left: auto; font-size: 12px; color: #C3CDE6; }
+
+/* mobile dock — hidden on desktop */
+.mobile-dock { display: none; }
+
+/* ════════════════════════════════════
+   WINDOWS
+════════════════════════════════════ */
+.win {
+  position: absolute;
+  background: #F6F0E6;
+  border: 2px solid #1a1a1a;
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.55);
+  overflow: hidden;
+}
+
+/* MAIN — sized for 1920×1080 @ 100% */
+#winMain {
+  width: 920px;
+  visibility: hidden;
+  z-index: 3;
+}
+#winMain.ready { visibility: visible; }
+
+/* SUB WINDOWS */
+.win-sub        { width: 720px; z-index: 10; }
+.win-sub.narrow { width: 600px; }
+
+/* ── TITLEBAR ── */
+.titlebar {
+  background: #1a1a1a; padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: move; flex-shrink: 0;
+}
+.dots { display: flex; gap: 7px; align-items: center; }
+.dot  { width: 14px; height: 14px; border-radius: 50%; cursor: pointer; flex-shrink: 0; transition: filter 0.12s; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #ffbd2e; }
+.dot-g { background: #28c940; }
+.dot:hover { filter: brightness(0.72); }
+.bar-title {
+  flex: 1; text-align: center; font-size: 13px;
+  color: #F6F0E6; letter-spacing: 0.05em; pointer-events: none;
+}
+
+/* ── WINDOW BODY ── */
+.win-body { padding: 30px; overflow-y: auto; }
+
+/* ── ANIMATIONS ── */
+@keyframes winOpen   { 0%{opacity:0;transform:scale(0.78)} 65%{transform:scale(1.03)} 100%{opacity:1;transform:scale(1)} }
+@keyframes winClose  { 0%{opacity:1;transform:scale(1)}  100%{opacity:0;transform:scale(0.42)} }
+@keyframes winMinOut { 0%{opacity:1;transform:scale(1) translateY(0)}  100%{opacity:0;transform:scale(0.06) translateY(800px)} }
+@keyframes winMinIn  { 0%{opacity:0;transform:scale(0.06) translateY(800px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
+@keyframes winMaxIn  { 0%{opacity:0.4} 100%{opacity:1} }
+.anim-open    { animation: winOpen   0.32s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+.anim-close   { animation: winClose  0.22s ease-in   forwards; pointer-events:none; }
+.anim-min-out { animation: winMinOut 0.26s cubic-bezier(0.4,0,1,1) forwards; pointer-events:none; }
+.anim-min-in  { animation: winMinIn  0.32s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
+.anim-max     { animation: winMaxIn  0.18s ease-out  forwards; }
+
+/* ── MAIN WINDOW CONTENT ── */
+.main-content { display: flex; gap: 24px; align-items: flex-start; }
+.avatar {
+  width: 130px; height: 130px; border: 2px solid #1a1a1a;
+  flex-shrink: 0; background: #C3CDE6;
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar svg { width: 100px; height: 100px; stroke: #1a1a1a; stroke-width: 1.2; fill: none; }
+.main-text h1 { font-family:'Special Elite',serif; font-size: 38px; color:#1a1a1a; margin-bottom:6px; }
+.main-text .sub { font-size: 14px; color: #15317E; margin-bottom: 13px; font-weight: 500; }
+.main-text p { font-size: 14px; color: #333; line-height: 1.75; }
+
+.prog-wrap { margin-top: 24px; border: 1.5px solid #1a1a1a; height: 18px; background: #e8e0d0; overflow: hidden; }
+.prog-fill {
+  height: 100%;
+  background: repeating-linear-gradient(90deg,#15317E 0,#15317E 9px,transparent 9px,transparent 12px);
+  width: 0%; transition: width 2.2s ease-out;
+}
+.prog-label { font-size: 11px; color: #888; margin-top: 6px; }
+
+/* DOCK */
+.dock { display: flex; justify-content: center; gap: 36px; margin-top: 24px; padding-top: 20px; border-top: 1.5px solid #d8d0c0; }
+.dock-icon { display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; transition:transform 0.15s; }
+.dock-icon:hover  { transform: translateY(-8px) scale(1.18); }
+.dock-icon:active { transform: scale(0.95); }
+.dock-icon svg { width: 44px; height: 44px; stroke: #1a1a1a; stroke-width: 1.5; fill: none; }
+.dock-label { font-size: 12px; color: #444; }
+
+/* ── CONTENT STYLES ── */
+.sub-c { font-size: 14px; color: #1a1a1a; line-height: 1.85; }
+.sub-c h2 { font-family:'Special Elite',serif; font-size: 22px; margin-bottom: 16px; color: #15317E; }
+.entry { border-left: 3px solid #15317E; padding-left: 12px; margin-bottom: 16px; }
+.et { font-size: 14px; font-weight: 500; }
+.es { color: #15317E; font-size: 11px; margin-top: 2px; opacity: 0.85; }
+.ed { font-size: 12px; margin-top: 5px; color: #444; line-height: 1.55; }
+
+/* BUBBLES — used everywhere */
+.bgroup { margin-bottom: 13px; }
+.bgroup:last-child { margin-bottom: 0; }
+.blabel { font-size: 10px; color: #15317E; letter-spacing: 0.06em; margin-bottom: 7px; font-weight: 500; }
+.bubbles { display: flex; flex-wrap: wrap; gap: 7px; }
+.bub {
+  font-size: 11px; padding: 4px 11px;
+  border: 1px solid #15317E; border-radius: 999px;
+  background: #C3CDE6; color: #15317E;
+  cursor: default; transition: transform 0.12s, background 0.12s, color 0.12s, box-shadow 0.12s;
+}
+.bub:hover { transform: translateY(-2px) scale(1.07); background:#15317E; color:#F6F0E6; box-shadow:0 2px 0 #1a1a1a; }
+
+.tech-sec { margin-top: 18px; padding-top: 16px; border-top: 1px solid #C3CDE6; }
+
+/* project cards */
+.proj { border: 1.5px solid #d8d0c0; padding: 15px; margin-bottom: 14px; background: #ede7d9; }
+.pname { font-size: 15px; font-weight: 500; }
+.pdesc { font-size: 12px; color: #555; margin-top: 5px; line-height: 1.55; }
+.pbubs { margin-top: 10px; }
+
+/* facts box */
+.facts-box { border: 1.5px solid #C3CDE6; padding: 16px; background: #ede7d9; margin-top: 16px; }
+.facts-label { font-size: 11px; color: #15317E; margin-bottom: 10px; font-weight: 500; }
+
+/* contact */
+.cfield { margin-bottom: 16px; }
+.clabel { font-size: 11px; color: #15317E; margin-bottom: 4px; letter-spacing: 0.07em; font-weight: 500; }
+.cval { font-size: 14px; color: #1a1a1a; border-bottom: 1px solid #C3CDE6; padding-bottom: 4px; }
+.cval a { color: #15317E; text-decoration: none; }
+.cval a:hover { text-decoration: underline; }
+.cbtns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.cbtn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'IBM Plex Mono'; font-size: 13px;
+  padding: 10px 18px; border: 1.5px solid #1a1a1a;
+  background: #e8e0d0; color: #1a1a1a;
+  text-decoration: none; cursor: pointer; transition: all 0.1s;
+}
+.cbtn:hover { background: #15317E; color: #F6F0E6; border-color: #15317E; }
+.cbtn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; flex-shrink: 0; }
+
+.rbtn {
+  font-family: 'IBM Plex Mono'; font-size: 13px; padding: 9px 20px;
+  border: 1.5px solid #1a1a1a; background: #e8e0d0; cursor: pointer;
+  color: #1a1a1a; transition: all 0.1s; letter-spacing: 0.04em;
+  text-decoration: none; display: inline-block;
+}
+.rbtn:hover  { background: #15317E; color: #F6F0E6; border-color: #15317E; }
+.rbtn.full { display: block; width: 100%; text-align: center; margin-top: 16px; }
+
+.cursor-blink { display:inline-block; width:8px; height:16px; background:#1a1a1a; animation:blink 1s infinite; vertical-align:middle; margin-left:3px; }
+@keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+/* ════════════════════════════════════
+   MOBILE  ≤ 768px
+════════════════════════════════════ */
+@media (max-width: 768px) {
+  .icons-rail { display: none !important; }
+
+  .mobile-dock {
+    display: flex !important;
     position: absolute;
-    inset: 0; width: 100%; height: 100%;
-    z-index: 0; pointer-events: none;
-  }
-
-  /* ── ICON RAIL ── */
-  .icons-rail {
-    position: absolute;
-    left: clamp(18px, 2.5vw, 32px);
-    top: 0;
-    bottom: var(--taskbar-h);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    align-items: center;
-    z-index: 2;
-    padding: clamp(24px, 4vh, 48px) 0;
-    width: var(--icon-col-w);
-  }
-
-  .desktop-icon {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    width: var(--icon-col-w);
-    transition: transform 0.15s;
-  }
-  .desktop-icon:hover { transform: scale(1.08); }
-  .desktop-icon:active { transform: scale(0.95); }
-  .icon-img {
-    width: var(--icon-img-size);
-    height: var(--icon-img-size);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .icon-img svg {
-    width: var(--icon-svg-size);
-    height: var(--icon-svg-size);
-    stroke: #1a1a1a;
-    stroke-width: 1.4;
-    fill: none;
-  }
-  .icon-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: clamp(10px, 1vmin, 11px);
-    text-align: center;
-    color: #1a1a1a;
-    line-height: 1.2;
-    background: rgba(246,240,230,0.92);
-    padding: 1px 4px;
-    max-width: 100%;
-    word-break: break-word;
-  }
-
-  /* ── WINDOW BASE ── */
-  .main-window, .sub-window {
-    background: #F6F0E6;
-    border: 2px solid #1a1a1a;
-    box-shadow: 6px 6px 0 #1a1a1a;
-    position: absolute;
-    transform: none;
-    will-change: top, left, width, height, transform, opacity;
-  }
-
-  .main-window {
-    width: var(--main-window-w);
-    max-width: calc(100vw - var(--icon-col-w) - 48px);
-    z-index: 3;
-    visibility: hidden;
-  }
-  .main-window.ready { visibility: visible; }
-
-  .sub-window {
-    width: var(--sub-window-w);
-    max-width: calc(100vw - 32px);
-    z-index: 10;
-  }
-  .sub-window.resume-window {
-    width: clamp(340px, 30vw, 420px);
-  }
-  .resume-window .window-body {
-    padding: clamp(16px, 2vw, 22px);
-  }
-
-  .window-opening {
-    animation: windowOpen 0.32s var(--win-ease) both;
-  }
-  @keyframes windowOpen {
-    0%   { opacity: 0; transform: scale(0.88); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-
-  .window-animating {
-    pointer-events: none;
-  }
-
-  /* ── CLOSE ANIMATIONS ── */
-  .window-closing {
-    transition: transform 0.2s ease, opacity 0.2s ease !important;
-    transform: scale(0.45) !important;
-    opacity: 0 !important;
-  }
-
-  /* ── TITLE BAR ── */
-  .titlebar {
-    background: #1a1a1a;
-    padding: 9px 14px;
-    display: flex; align-items: center; gap: 10px;
-    cursor: move;
-  }
-  .titlebar-dots { display: flex; gap: 7px; align-items: center; }
-  .dot {
-    width: 14px; height: 14px; border-radius: 50%;
-    cursor: pointer; transition: filter 0.12s;
-    flex-shrink: 0;
-  }
-  .dot.close { background: #ff5f57; }
-  .dot.min   { background: #ffbd2e; }
-  .dot.max   { background: #28c940; }
-  .dot.close:hover { filter: brightness(0.8); }
-  .dot.min:hover   { filter: brightness(0.8); }
-  .dot.max:hover   { filter: brightness(0.8); }
-  .titlebar-title {
-    flex: 1; text-align: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px; color: #F6F0E6;
-    letter-spacing: 0.05em;
-  }
-
-  /* ── WINDOW BODY ── */
-  .window-body { padding: clamp(20px, 2.5vw, 28px); }
-
-  /* ── MAIN WINDOW INTERNALS ── */
-  .main-content { display: flex; gap: clamp(16px, 2vw, 22px); align-items: flex-start; }
-  .main-avatar {
-    width: clamp(90px, 11vw, 115px);
-    height: clamp(90px, 11vw, 115px);
-    border: 2px solid #1a1a1a;
-    flex-shrink: 0;
-    background: #C3CDE6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .main-avatar svg {
-    width: clamp(68px, 8vw, 88px);
-    height: clamp(68px, 8vw, 88px);
-    stroke: #1a1a1a;
-    stroke-width: 1.2;
-    fill: none;
-  }
-
-  .main-text h1 { font-family:'Special Elite',serif; font-size:clamp(24px, 3vw, 32px); color:#1a1a1a; margin-bottom:5px; }
-  .main-text .subtitle { font-size:clamp(11px, 1.2vw, 12px); color:#15317E; margin-bottom:12px; font-weight:500; }
-  .main-text p { font-size:clamp(12px, 1.3vw, 13px); color:#333; line-height:1.75; }
-
-  .progress-bar-wrap {
-    margin-top: 22px;
-    border: 1.5px solid #1a1a1a;
-    height: 17px; background: #ede7d9; overflow: hidden;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: repeating-linear-gradient(90deg,#15317E 0,#15317E 9px,transparent 9px,transparent 12px);
-    width: 0%; transition: width 2.2s ease-out;
-  }
-  .progress-label { font-size: 10px; color: #888; margin-top: 5px; }
-
-  /* ── DOCK ── */
-  .dock {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: var(--dock-gap);
-    margin-top: 22px;
-    padding-top: 18px;
+    bottom: 38px; left: 0; right: 0;
+    height: 70px;
+    background: rgba(246,240,230,0.96);
+    backdrop-filter: blur(8px);
     border-top: 1.5px solid #d0c8b8;
+    justify-content: space-around; align-items: center;
+    padding: 0 6px; z-index: 150;
   }
-  .dock-icon {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: transform 0.15s;
-    flex: 0 0 auto;
+  .mob-icon {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    cursor: pointer; flex: 1; min-width: 0;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.13s;
   }
-  .dock-icon:hover { transform: translateY(-7px) scale(1.18); }
-  .dock-icon:active { transform: scale(0.95); }
-  .dock-icon svg {
-    width: clamp(34px, 4vw, 40px);
-    height: clamp(34px, 4vw, 40px);
-    stroke: #1a1a1a;
-    stroke-width: 1.5;
-    fill: none;
-  }
-  .dock-label { font-size: 10px; color: #444; text-align: center; font-family: 'IBM Plex Mono'; max-width: 64px; }
+  .mob-icon:active { transform: scale(0.86); }
+  .mob-icon svg { width: 32px; height: 32px; stroke: #1a1a1a; stroke-width: 1.6; fill: none; }
+  .mob-icon span { font-size: 11px; color: #333; font-family: 'IBM Plex Mono'; text-align: center; }
 
-  /* ── BUTTONS ── */
-  .retro-btn {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px; padding: 8px 20px;
-    border: 1.5px solid #1a1a1a;
-    background: #ede7d9;
-    cursor: pointer; color: #1a1a1a;
-    transition: all 0.1s; letter-spacing: 0.04em;
+  /* windows fill screen */
+  #winMain,
+  .win-sub,
+  .win-sub.narrow {
+    width: calc(100vw - 10px) !important;
+    left: 5px !important;
+    top: 5px !important;
+    right: auto !important;
+    transform: none !important;
+    max-height: calc(100vh - 38px - 70px - 10px) !important;
+    overflow-y: auto;
   }
-  .retro-btn:hover { background: #15317E; color: #F6F0E6; border-color: #15317E; }
-  .retro-btn:active { transform: translate(2px,2px); }
-
-  /* ── SUB CONTENT ── */
-  .sub-content { font-family:'IBM Plex Mono',monospace; font-size:13px; color:#1a1a1a; line-height:1.85; }
-  .sub-content h2 { font-family:'Special Elite',serif; font-size:20px; margin-bottom:12px; color:#15317E; }
-  .sub-content .entry { border-left:3px solid #15317E; padding-left:10px; margin-bottom:12px; }
-  .sub-content .entry-title { font-size:13px; font-weight:500; }
-  .sub-content .entry-sub { color:#15317E; font-size:10px; margin-top:2px; opacity:0.8; }
-  .sub-content .entry-desc { font-size:11px; margin-top:4px; color:#444; line-height:1.6; }
-
-  .tech-stack {
-    margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px solid #C3CDE6;
+  .win-body {
+    padding: 18px 16px;
   }
-  .tech-group { margin-bottom: 10px; }
-  .tech-group:last-child { margin-bottom: 0; }
-  .tech-group-label {
-    font-size: 9px;
-    color: #15317E;
-    letter-spacing: 0.06em;
-    margin-bottom: 6px;
-    font-weight: 500;
-  }
-  .tech-bubbles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-  .tech-bubble {
-    font-size: 10px;
-    padding: 3px 8px;
-    border: 1px solid #15317E;
-    border-radius: 999px;
-    background: #C3CDE6;
-    color: #15317E;
-    cursor: default;
-    transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
-  }
-  .tech-bubble:hover {
-    transform: translateY(-2px) scale(1.06);
-    background: #15317E;
-    color: #F6F0E6;
-    box-shadow: 0 2px 0 #1a1a1a;
-  }
-  .resume-dl-btn {
-    display: block;
-    margin-top: 14px;
-    width: 100%;
-    text-align: center;
-    text-decoration: none;
-  }
-
-  .contact-field { margin-bottom:14px; }
-  .contact-label { font-size:11px; color:#15317E; margin-bottom:3px; letter-spacing:0.08em; font-weight:500; }
-  .contact-val { font-size:13px; color:#1a1a1a; border-bottom:1px solid #C3CDE6; padding-bottom:4px; }
-
-  .project-item { border:1.5px solid #d0c8b8; padding:12px; margin-bottom:12px; background:#ede7d9; }
-  .project-name { font-size:14px; font-weight:500; }
-  .project-desc { font-size:11px; color:#555; margin-top:4px; line-height:1.55; }
-  .project-tags { display:flex; gap:6px; margin-top:7px; flex-wrap:wrap; }
-  .tag { font-size:10px; border:1px solid #15317E; padding:2px 7px; background:#C3CDE6; color:#15317E; }
-
-  @media (max-width: 700px) {
-    .icons-rail {
-      flex-direction: row;
-      left: 0;
-      right: 0;
-      top: auto;
-      bottom: var(--taskbar-h);
-      width: 100%;
-      height: auto;
-      padding: 8px 10px;
-      justify-content: space-around;
-      background: rgba(246,240,230,0.55);
-      backdrop-filter: blur(2px);
-    }
-    .desktop-icon { width: auto; min-width: 58px; }
-    .icon-label { font-size: 9px; }
-    .main-window, .sub-window {
-      max-width: calc(100vw - 16px);
-    }
-    .main-content { flex-direction: column; align-items: center; text-align: center; }
-  }
-
-  /* ── TASKBAR ── */
-  .taskbar {
-    position: absolute; bottom:0; left:0; right:0;
-    height: var(--taskbar-h); background: #15317E;
-    display: flex; align-items: center;
-    padding: 0 16px; z-index: 20; gap: 10px;
-  }
-  .taskbar-btn {
-    font-family: 'IBM Plex Mono'; font-size: 11px;
-    color: #F6F0E6; background: transparent;
-    border: 1px solid rgba(246,240,230,0.4);
-    padding: 2px 10px; cursor: pointer;
-    transition: background 0.1s; white-space: nowrap;
-  }
-  .taskbar-btn:hover { background: rgba(246,240,230,0.15); }
-  .taskbar-btn.active { background: rgba(246,240,230,0.22); border-color: #F6F0E6; }
-  .taskbar-time { margin-left: auto; font-size: 11px; color: #C3CDE6; font-family: 'IBM Plex Mono'; }
-
-  .cursor-blink { display:inline-block; width:8px; height:16px; background:#1a1a1a; animation:blink 1s infinite; vertical-align:middle; margin-left:3px; }
-  @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
-
-  input { font-family: 'IBM Plex Mono'; }
-  input:focus { outline: 1px solid #15317E; }
+  /* stacked hero */
+  .main-content { flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+  .avatar { width: 90px; height: 90px; }
+  .avatar svg { width: 70px; height: 70px; }
+  .main-text h1 { font-size: 26px; }
+  .main-text .sub { font-size: 12px; }
+  .main-text p { font-size: 13px; }
+  .dock { gap: 18px; padding-top: 14px; margin-top: 14px; }
+  .dock-icon svg { width: 34px; height: 34px; }
+  .dock-label { font-size: 10px; }
+  /* content */
+  .sub-c { font-size: 13px; }
+  .sub-c h2 { font-size: 20px; }
+  .bub { font-size: 12px; padding: 5px 12px; }
+  .cbtn { font-size: 13px; }
+  .pname { font-size: 15px; }
+}
 </style>
 </head>
 <body>
 <div class="desktop" id="desktop">
 
+  <!-- BACKGROUND WAVES -->
   <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-    <path d="M -100 0 C 200 -40, 500 200, 600 350 C 700 500, 600 650, 800 700 C 1000 750, 1300 600, 1540 700 L 1540 0 Z" fill="#15317E" opacity="0.1"/>
-    <path d="M -100 900 C 150 820, 400 720, 600 780 C 800 840, 950 920, 1200 860 C 1350 820, 1440 780, 1540 800 L 1540 900 Z" fill="#C3CDE6" opacity="0.6"/>
-    <path d="M 800 -100 C 1000 0, 1200 80, 1350 200 C 1500 320, 1580 420, 1540 0 Z" fill="#C3CDE6" opacity="0.5"/>
-    <path d="M -100 600 C 100 560, 250 620, 320 700 C 390 780, 300 880, 100 900 L -100 900 Z" fill="#15317E" opacity="0.15"/>
-    <path d="M -100 400 C 300 300, 550 500, 850 420 C 1150 340, 1350 200, 1540 300 L 1540 520 C 1300 420, 1100 560, 800 600 C 500 640, 250 480, -100 560 Z" fill="#C3CDE6" opacity="0.2"/>
+    <path d="M-100 0 C200-40,500 200,600 350 C700 500,600 650,800 700 C1000 750,1300 600,1540 700 L1540 0Z" fill="#15317E" opacity="0.08"/>
+    <path d="M-100 900 C150 820,400 720,600 780 C800 840,950 920,1200 860 C1350 820,1440 780,1540 800 L1540 900Z" fill="#C3CDE6" opacity="0.55"/>
+    <path d="M800-100 C1000 0,1200 80,1350 200 C1500 320,1580 420,1540 0Z" fill="#C3CDE6" opacity="0.45"/>
+    <path d="M-100 600 C100 560,250 620,320 700 C390 780,300 880,100 900 L-100 900Z" fill="#15317E" opacity="0.12"/>
+    <path d="M-100 380 C300 280,560 480,860 400 C1160 320,1360 180,1540 280 L1540 500 C1300 400,1100 540,800 580 C500 620,250 460,-100 540Z" fill="#C3CDE6" opacity="0.18"/>
   </svg>
 
+  <!-- DESKTOP ICON RAIL -->
   <div class="icons-rail">
-    <div class="desktop-icon" onclick="openWindow('resume')">
-      <div class="icon-img"><svg viewBox="0 0 54 54"><rect x="9" y="4" width="30" height="40" rx="2"/><line x1="15" y1="15" x2="33" y2="15"/><line x1="15" y1="22" x2="33" y2="22"/><line x1="15" y1="29" x2="25" y2="29"/><polygon points="34,30 44,39 40,43 30,34"/></svg></div>
+    <div class="desktop-icon" onclick="openWin('resume')">
+      <div class="icon-img"><svg viewBox="0 0 52 52"><rect x="8" y="3" width="28" height="38" rx="2"/><line x1="13" y1="13" x2="30" y2="13"/><line x1="13" y1="19" x2="30" y2="19"/><line x1="13" y1="25" x2="22" y2="25"/><polygon points="30,27 40,35 37,39 27,31"/></svg></div>
       <span class="icon-label">MyResume</span>
     </div>
-    <div class="desktop-icon" onclick="openWindow('projects')">
-      <div class="icon-img"><svg viewBox="0 0 54 54"><rect x="4" y="12" width="46" height="30" rx="2"/><polyline points="4,20 50,20"/><circle cx="11" cy="16" r="2.5" fill="#1a1a1a"/><circle cx="19" cy="16" r="2.5" fill="#1a1a1a"/><circle cx="27" cy="16" r="2.5" fill="#1a1a1a"/><rect x="10" y="27" width="14" height="9"/><rect x="30" y="27" width="14" height="9"/></svg></div>
+    <div class="desktop-icon" onclick="openWin('projects')">
+      <div class="icon-img"><svg viewBox="0 0 52 52"><rect x="3" y="10" width="46" height="30" rx="2"/><polyline points="3,18 49,18"/><circle cx="9" cy="14" r="2.4" fill="#1a1a1a"/><circle cx="16" cy="14" r="2.4" fill="#1a1a1a"/><circle cx="23" cy="14" r="2.4" fill="#1a1a1a"/><rect x="9" y="24" width="13" height="9"/><rect x="28" y="24" width="13" height="9"/></svg></div>
       <span class="icon-label">My_Projects</span>
     </div>
-    <div class="desktop-icon" onclick="openWindow('about')">
-      <div class="icon-img"><svg viewBox="0 0 54 54"><rect x="7" y="4" width="40" height="46" rx="2"/><circle cx="27" cy="18" r="6"/><path d="M13 44c0-8 6-13 14-13s14 5 14 13"/></svg></div>
+    <div class="desktop-icon" onclick="openWin('about')">
+      <div class="icon-img"><svg viewBox="0 0 52 52"><rect x="5" y="3" width="42" height="46" rx="2"/><circle cx="26" cy="17" r="7"/><path d="M11 44c0-9 6-14 15-14s15 5 15 14"/></svg></div>
       <span class="icon-label">AboutMe.exe</span>
     </div>
-    <div class="desktop-icon" onclick="openWindow('github')">
-      <div class="icon-img"><svg viewBox="0 0 54 54"><path d="M27 7C16 7 7 16 7 27c0 9 6 17 14 20 1 .2 1.4-.5 1.4-1v-3.6c-5.9 1.2-7.2-2.9-7.2-2.9-1-2.4-2.4-3.1-2.4-3.1-1.9-1.3.1-1.3.1-1.3 2.1.1 3.3 2.2 3.3 2.2 1.9 3.3 5 2.3 6.2 1.7.2-1.3.8-2.2 1.4-2.8-4.7-.5-9.7-2.4-9.7-10.5 0-2.3.8-4.2 2.2-5.7-.2-.6-1-2.7.2-5.6 0 0 1.8-.6 6 2.2 1.7-.5 3.6-.7 5.5-.7s3.8.2 5.5.8c4.2-2.8 6-2.2 6-2.2 1.2 2.9.4 5 .2 5.6 1.4 1.5 2.2 3.4 2.2 5.7 0 8.1-5 9.9-9.8 10.4.8.7 1.5 2 1.5 4v6c0 .6.4 1.2 1.5 1C41 44 47 36 47 27 47 16 38 7 27 7z"/></svg></div>
+    <div class="desktop-icon" onclick="openWin('github')">
+      <div class="icon-img"><svg viewBox="0 0 52 52"><path d="M26 6C15 6 6 15 6 26c0 9 6 16 14 19 1 .2 1.4-.5 1.4-1v-3.4c-5.7 1.2-6.9-2.8-6.9-2.8-.9-2.3-2.3-2.9-2.3-2.9-1.8-1.2.1-1.2.1-1.2 2 .1 3.1 2 3.1 2 1.8 3 4.8 2.2 5.9 1.6.2-1.2.7-2 1.3-2.5-4.5-.5-9.3-2.3-9.3-10.1 0-2.2.8-4 2.1-5.4-.2-.6-.9-2.6.2-5.3 0 0 1.7-.5 5.7 2.1 1.6-.4 3.4-.7 5.2-.7s3.6.2 5.2.7c4-2.6 5.7-2.1 5.7-2.1 1.1 2.7.4 4.7.2 5.3 1.3 1.4 2.1 3.2 2.1 5.4 0 7.8-4.8 9.5-9.3 10 .7.6 1.4 1.9 1.4 3.8v5.6c0 .6.4 1.2 1.4 1C40 42 46 35 46 26 46 15 37 6 26 6z"/></svg></div>
       <span class="icon-label">GitHub.lnk</span>
     </div>
-    <div class="desktop-icon" onclick="openWindow('contact')">
-      <div class="icon-img"><svg viewBox="0 0 54 54"><rect x="5" y="12" width="44" height="30" rx="2"/><polyline points="5,12 27,30 49,12"/></svg></div>
+    <div class="desktop-icon" onclick="openWin('contact')">
+      <div class="icon-img"><svg viewBox="0 0 52 52"><rect x="4" y="11" width="44" height="30" rx="2"/><polyline points="4,11 26,28 48,11"/></svg></div>
       <span class="icon-label">Contact_Me</span>
     </div>
   </div>
 
-  <div class="main-window" id="mainWindow">
-    <div class="titlebar" onmousedown="startDrag(event,'mainWindow')">
-      <div class="titlebar-dots">
-        <div class="dot close" title="Close"    onclick="closeMainWindow()"></div>
-        <div class="dot min"   title="Minimize" onclick="minimizeMain()"></div>
-        <div class="dot max"   title="Maximize" onclick="toggleMaximize('mainWindow')"></div>
+  <!-- MOBILE DOCK -->
+  <div class="mobile-dock">
+    <div class="mob-icon" onclick="openWin('resume')"><svg viewBox="0 0 52 52"><rect x="8" y="3" width="28" height="38" rx="2"/><line x1="13" y1="13" x2="30" y2="13"/><line x1="13" y1="19" x2="30" y2="19"/><line x1="13" y1="25" x2="22" y2="25"/><polygon points="30,27 40,35 37,39 27,31"/></svg><span>Resume</span></div>
+    <div class="mob-icon" onclick="openWin('projects')"><svg viewBox="0 0 52 52"><rect x="3" y="10" width="46" height="30" rx="2"/><polyline points="3,18 49,18"/><circle cx="9" cy="14" r="2.4" fill="#1a1a1a"/><rect x="9" y="24" width="13" height="9"/><rect x="28" y="24" width="13" height="9"/></svg><span>Projects</span></div>
+    <div class="mob-icon" onclick="openWin('about')"><svg viewBox="0 0 52 52"><rect x="5" y="3" width="42" height="46" rx="2"/><circle cx="26" cy="17" r="7"/><path d="M11 44c0-9 6-14 15-14s15 5 15 14"/></svg><span>About</span></div>
+    <div class="mob-icon" onclick="openWin('github')"><svg viewBox="0 0 52 52"><path d="M26 6C15 6 6 15 6 26c0 9 6 16 14 19 1 .2 1.4-.5 1.4-1v-3.4c-5.7 1.2-6.9-2.8-6.9-2.8-.9-2.3-2.3-2.9-2.3-2.9-1.8-1.2.1-1.2.1-1.2 2 .1 3.1 2 3.1 2 1.8 3 4.8 2.2 5.9 1.6.2-1.2.7-2 1.3-2.5-4.5-.5-9.3-2.3-9.3-10.1 0-2.2.8-4 2.1-5.4-.2-.6-.9-2.6.2-5.3 0 0 1.7-.5 5.7 2.1 1.6-.4 3.4-.7 5.2-.7s3.6.2 5.2.7c4-2.6 5.7-2.1 5.7-2.1 1.1 2.7.4 4.7.2 5.3 1.3 1.4 2.1 3.2 2.1 5.4 0 7.8-4.8 9.5-9.3 10 .7.6 1.4 1.9 1.4 3.8v5.6c0 .6.4 1.2 1.4 1C40 42 46 35 46 26 46 15 37 6 26 6z"/></svg><span>GitHub</span></div>
+    <div class="mob-icon" onclick="openWin('contact')"><svg viewBox="0 0 52 52"><rect x="4" y="11" width="44" height="30" rx="2"/><polyline points="4,11 26,28 48,11"/></svg><span>Contact</span></div>
+  </div>
+
+  <!-- MAIN WINDOW -->
+  <div class="win" id="winMain">
+    <div class="titlebar" id="barMain">
+      <div class="dots">
+        <div class="dot dot-r" onclick="closeMain()"></div>
+        <div class="dot dot-y" onclick="minimizeMain()"></div>
+        <div class="dot dot-g" onclick="maximizeWin('winMain')"></div>
       </div>
-      <div class="titlebar-title">Welcome.exe — Running</div>
+      <div class="bar-title">Welcome.exe — Running</div>
     </div>
-    <div class="window-body" id="mainWindow-body">
+    <div class="win-body" id="mainBody">
       <div class="main-content">
-        <div class="main-avatar">
-          <svg viewBox="0 0 88 88"><circle cx="44" cy="32" r="18"/><path d="M13 80c0-18 14-29 31-29s31 11 31 29"/></svg>
-        </div>
+        <div class="avatar"><svg viewBox="0 0 84 84"><circle cx="42" cy="30" r="17"/><path d="M12 74c0-17 13-27 30-27s30 10 30 27"/></svg></div>
         <div class="main-text">
           <h1>Komail Yusufzade<span class="cursor-blink"></span></h1>
-          <div class="subtitle">// developer · student · creative</div>
+          <div class="sub">// developer · student · creative</div>
           <p>Building things at the intersection of code and intelligence. Currently open to new opportunities.</p>
-          <p style="margin-top:9px">Based in Hamburg, DE 🌍</p>
+          <p style="margin-top:10px">Based in Hamburg, DE 🌍</p>
         </div>
       </div>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar-fill" id="mainProgress"></div>
-      </div>
-      <div class="progress-label">Loading portfolio... please wait</div>
+      <div class="prog-wrap"><div class="prog-fill" id="progFill"></div></div>
+      <div class="prog-label">Loading portfolio... please wait</div>
       <div class="dock">
-        <div class="dock-icon" onclick="openWindow('resume')">
-          <svg viewBox="0 0 40 40"><rect x="6" y="3" width="22" height="30" rx="2"/><line x1="11" y1="11" x2="24" y2="11"/><line x1="11" y1="16" x2="24" y2="16"/><line x1="11" y1="21" x2="18" y2="21"/><polygon points="25,22 33,29 30,32 22,25"/></svg>
-          <span class="dock-label">Resume</span>
-        </div>
-        <div class="dock-icon" onclick="openWindow('projects')">
-          <svg viewBox="0 0 40 40"><rect x="3" y="9" width="34" height="22" rx="2"/><polyline points="3,15 37,15"/><circle cx="8" cy="12" r="2" fill="#1a1a1a"/><circle cx="14" cy="12" r="2" fill="#1a1a1a"/><rect x="7" y="20" width="10" height="6"/><rect x="22" y="20" width="10" height="6"/></svg>
-          <span class="dock-label">Projects</span>
-        </div>
-        <div class="dock-icon" onclick="openWindow('about')">
-          <svg viewBox="0 0 40 40"><rect x="5" y="3" width="30" height="34" rx="2"/><circle cx="20" cy="13" r="5"/><path d="M9 33c0-6 5-10 11-10s11 4 11 10"/></svg>
-          <span class="dock-label">About Me</span>
-        </div>
-        <div class="dock-icon" onclick="openWindow('github')">
-          <svg viewBox="0 0 40 40"><path d="M20 5C12 5 5 12 5 20c0 7 4 12 10 15 .7.1 1-.4 1-.7v-2.7c-3.9.9-4.8-1.9-4.8-1.9-.6-1.6-1.6-2-1.6-2-1.3-.9.1-.9.1-.9 1.4.1 2.2 1.5 2.2 1.5 1.3 2.2 3.4 1.6 4.2 1.2.1-.9.5-1.6.9-1.9-3.2-.4-6.5-1.6-6.5-7 0-1.6.6-2.8 1.5-3.8-.2-.4-.7-1.8.1-3.7 0 0 1.2-.4 4 1.5 1.2-.3 2.4-.5 3.6-.5s2.4.2 3.6.5c2.8-1.9 4-1.5 4-1.5.8 1.9.3 3.3.1 3.7.9 1 1.5 2.2 1.5 3.8 0 5.4-3.3 6.6-6.5 7 .5.5 1 1.4 1 2.7v4c0 .4.3.8 1 .7 6-2 10-8 10-15C35 12 28 5 20 5z"/></svg>
-          <span class="dock-label">GitHub</span>
-        </div>
-        <div class="dock-icon" onclick="openWindow('contact')">
-          <svg viewBox="0 0 40 40"><rect x="3" y="9" width="34" height="22" rx="2"/><polyline points="3,9 20,22 37,9"/></svg>
-          <span class="dock-label">Contact</span>
-        </div>
+        <div class="dock-icon" onclick="openWin('resume')"><svg viewBox="0 0 38 38"><rect x="5" y="2" width="21" height="29" rx="2"/><line x1="9" y1="10" x2="22" y2="10"/><line x1="9" y1="15" x2="22" y2="15"/><line x1="9" y1="20" x2="16" y2="20"/><polygon points="22,21 30,28 27,31 19,24"/></svg><span class="dock-label">Resume</span></div>
+        <div class="dock-icon" onclick="openWin('projects')"><svg viewBox="0 0 38 38"><rect x="2" y="8" width="34" height="22" rx="2"/><polyline points="2,14 36,14"/><circle cx="6" cy="11" r="2" fill="#1a1a1a"/><circle cx="12" cy="11" r="2" fill="#1a1a1a"/><rect x="6" y="18" width="10" height="7"/><rect x="21" y="18" width="10" height="7"/></svg><span class="dock-label">Projects</span></div>
+        <div class="dock-icon" onclick="openWin('about')"><svg viewBox="0 0 38 38"><rect x="4" y="2" width="30" height="34" rx="2"/><circle cx="19" cy="12" r="5"/><path d="M8 32c0-6 5-10 11-10s11 4 11 10"/></svg><span class="dock-label">About Me</span></div>
+        <div class="dock-icon" onclick="openWin('github')"><svg viewBox="0 0 38 38"><path d="M19 4C11 4 4 11 4 19c0 7 4 12 10 14 .7.1 1-.3 1-.7v-2.5c-3.8.8-4.6-1.8-4.6-1.8-.6-1.5-1.5-1.9-1.5-1.9-1.2-.9.1-.9.1-.9 1.4.1 2.1 1.4 2.1 1.4 1.2 2.1 3.2 1.5 4 1.2.1-.9.5-1.5.9-1.9-3.1-.4-6.3-1.6-6.3-6.9 0-1.5.5-2.8 1.4-3.7-.1-.4-.6-1.8.1-3.7 0 0 1.1-.4 3.7 1.4 1.1-.3 2.2-.5 3.4-.5s2.3.2 3.4.5c2.6-1.8 3.7-1.4 3.7-1.4.7 1.9.3 3.3.1 3.7.9.9 1.4 2.2 1.4 3.7 0 5.4-3.2 6.5-6.3 6.9.5.4 1 1.3 1 2.6v3.9c0 .4.3.8 1 .7 6-2 10-8 10-14C34 11 27 4 19 4z"/></svg><span class="dock-label">GitHub</span></div>
+        <div class="dock-icon" onclick="openWin('contact')"><svg viewBox="0 0 38 38"><rect x="2" y="8" width="34" height="22" rx="2"/><polyline points="2,8 19,21 36,8"/></svg><span class="dock-label">Contact</span></div>
       </div>
     </div>
   </div>
@@ -446,734 +369,390 @@
 </div>
 
 <script>
-/* ── AUDIO ENGINE (Web Audio API — no files needed) ── */
-var AudioCtx = window.AudioContext || window.webkitAudioContext;
-var actx = null;
-function getACtx() {
-  if (!actx) actx = new AudioCtx();
-  return actx;
+/* ════ AUDIO ════ */
+var _ac;
+function ac(){if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();return _ac;}
+
+/* Real mouse-click sound: filtered noise burst */
+function sndClick(){
+  try{
+    var c=ac(),sr=c.sampleRate,now=c.currentTime;
+    /* noise source */
+    var len=Math.floor(sr*0.012);
+    var buf=c.createBuffer(1,len,sr),d=buf.getChannelData(0);
+    for(var i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
+    var src=c.createBufferSource();
+    src.buffer=buf;
+    /* bandpass around 2k so it sounds like plastic click */
+    var bp=c.createBiquadFilter();
+    bp.type='bandpass';bp.frequency.value=2200;bp.Q.value=0.8;
+    var g=c.createGain();
+    src.connect(bp);bp.connect(g);g.connect(c.destination);
+    g.gain.setValueAtTime(1.1,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.012);
+    src.start(now);
+    /* tiny low-end thud to ground it */
+    var o=c.createOscillator(),g2=c.createGain();
+    o.connect(g2);g2.connect(c.destination);
+    o.type='sine';o.frequency.setValueAtTime(180,now);
+    o.frequency.exponentialRampToValueAtTime(60,now+0.018);
+    g2.gain.setValueAtTime(0.22,now);
+    g2.gain.exponentialRampToValueAtTime(0.001,now+0.018);
+    o.start(now);o.stop(now+0.02);
+  }catch(e){}
 }
 
-function playOpen() {
-  try {
-    var ctx = getACtx();
-    // Two quick ascending tones — "ding-ding"
-    [0, 0.08].forEach(function(delay, i) {
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(i === 0 ? 520 : 780, ctx.currentTime + delay);
-      gain.gain.setValueAtTime(0.18, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.18);
-      osc.start(ctx.currentTime + delay);
-      osc.stop(ctx.currentTime + delay + 0.18);
-    });
-  } catch(e) {}
+function beep(f1,f2,dur,type,vol){
+  try{
+    var c=ac(),o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);o.type=type||'sine';
+    o.frequency.setValueAtTime(f1,c.currentTime);
+    if(f2)o.frequency.exponentialRampToValueAtTime(f2,c.currentTime+dur);
+    g.gain.setValueAtTime(vol||0.13,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur+0.02);
+    o.start(c.currentTime);o.stop(c.currentTime+dur+0.05);
+  }catch(e){}
 }
+function sndClose(){beep(440,160,0.22,'sine',0.12);}
+function sndMin()  {beep(560,260,0.18,'sine',0.11);}
+function sndMax()  {beep(300,660,0.16,'triangle',0.11);}
+var bPitch=0,bLast=0;
+function sndBubble(){var now=Date.now();if(now-bLast<65)return;bLast=now;bPitch=(bPitch+1)%6;beep([523,587,659,698,784,880][bPitch],0,0.09,'sine',0.06);}
 
-function playClose() {
-  try {
-    var ctx = getACtx();
-    // Descending soft "poof"
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(440, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.2);
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.22);
-  } catch(e) {}
-}
+/* ════ STATE ════ */
+var WINS={},IS_MIN={},IS_MAX={},SAVED_PX={};
+/* positions stored as FRACTIONS of desktop (0..1) so they scale correctly */
+var POS_FRAC={};
+var mainMin=false,zTop=20;
+var TH=38,MOB_H=70;
 
-function playMinimize() {
-  try {
-    var ctx = getACtx();
-    // Quick descending chirp
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(600, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.15);
-    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.15);
-  } catch(e) {}
-}
+/* ════ CONTENT ════ */
+var C={
+  resume:{title:'MyResume.pdf',narrow:true,fx:0.175,fy:0.09,html:`<div class="sub-c"><h2>Curriculum Vitae</h2>
+    <div class="entry"><div class="et">Application Developer @ DPS Engineering</div><div class="es">2025 – present · Hamburg</div><div class="ed">Developed scalable applications and automated backend workflows with C#, JavaScript, and PowerFX.</div></div>
+    <div class="entry"><div class="et">IT-Support @ Imperium Auto Inc.</div><div class="es">2021 – 2024 · Brampton, Ontario</div><div class="ed">Managed systems, networks, and technical troubleshooting across operational workflows.</div></div>
+    <div class="entry"><div class="et">B.Sc. Computer Science</div><div class="es">2024 – 2027 · IU Internationale Hochschule</div></div>
+    <div class="entry"><div class="et">B.Sc. Computer Science (Transfer)</div><div class="es">2023 – 2024 · Sheridan College</div></div>
+    <div class="tech-sec">
+      <div class="bgroup"><div class="blabel">// programming_languages</div><div class="bubbles"><span class="bub" onmouseenter="sndBubble()">C#</span><span class="bub" onmouseenter="sndBubble()">Java</span><span class="bub" onmouseenter="sndBubble()">Python</span><span class="bub" onmouseenter="sndBubble()">JavaScript</span><span class="bub" onmouseenter="sndBubble()">C</span></div></div>
+      <div class="bgroup"><div class="blabel">// web_dev_&_databases</div><div class="bubbles"><span class="bub" onmouseenter="sndBubble()">Next.js</span><span class="bub" onmouseenter="sndBubble()">HTML5/CSS3</span><span class="bub" onmouseenter="sndBubble()">SQL</span><span class="bub" onmouseenter="sndBubble()">Dataverse</span><span class="bub" onmouseenter="sndBubble()">Firebase</span></div></div>
+      <div class="bgroup"><div class="blabel">// low-code_&_automation</div><div class="bubbles"><span class="bub" onmouseenter="sndBubble()">Power Apps</span><span class="bub" onmouseenter="sndBubble()">Power Automate</span><span class="bub" onmouseenter="sndBubble()">Power BI</span></div></div>
+      <div class="bgroup"><div class="blabel">// tools_&_methodologies</div><div class="bubbles"><span class="bub" onmouseenter="sndBubble()">Git/GitHub</span><span class="bub" onmouseenter="sndBubble()">Microsoft Office</span><span class="bub" onmouseenter="sndBubble()">Excel</span><span class="bub" onmouseenter="sndBubble()">Agile (Scrum)</span></div></div>
+    </div>
+    <a href="resume.pdf" download="Komail_Yusufzade_Resume.pdf" class="rbtn full">⬇ Download PDF</a></div>`},
 
-function playMaximize() {
-  try {
-    var ctx = getACtx();
-    // Short "whoosh" up
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 0.15);
-    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.18);
-  } catch(e) {}
-}
+  projects:{title:'My_Projects.dir',fx:0.22,fy:0.08,html:`<div class="sub-c"><h2>Selected Work</h2>
+    <div class="proj"><div class="pname">Portfolio OS</div><div class="pdesc">This very website — a retro Mac-inspired personal site built with vanilla HTML/CSS/JS.</div><div class="pbubs"><div class="bubbles"><span class="bub" onmouseenter="sndBubble()">HTML</span><span class="bub" onmouseenter="sndBubble()">CSS</span><span class="bub" onmouseenter="sndBubble()">JavaScript</span></div></div></div>
+    <div class="proj"><div class="pname">Project Management App</div><div class="pdesc">Built for a mid-sized company to track customers, projects, payments, budget forecasting, and invoices.</div><div class="pbubs"><div class="bubbles"><span class="bub" onmouseenter="sndBubble()">Power Apps</span><span class="bub" onmouseenter="sndBubble()">C#</span><span class="bub" onmouseenter="sndBubble()">JavaScript</span><span class="bub" onmouseenter="sndBubble()">SQL</span></div></div></div>
+    <div class="proj"><div class="pname">Habit Tracker</div><div class="pdesc">Calendar-based habit tracker demonstrating full-stack web development with a user-centered approach.</div><div class="pbubs"><div class="bubbles"><span class="bub" onmouseenter="sndBubble()">Node.js</span><span class="bub" onmouseenter="sndBubble()">Firestore</span><span class="bub" onmouseenter="sndBubble()">HTML/CSS/JS</span></div></div></div>
+    </div>`},
 
-var bubblePitch = 0;
-var lastBubbleSound = 0;
-function playBubbleHover() {
-  var now = Date.now();
-  if (now - lastBubbleSound < 70) return;
-  lastBubbleSound = now;
-  try {
-    var ctx = getACtx();
-    var notes = [523, 587, 659, 698, 784, 880];
-    bubblePitch = (bubblePitch + 1) % notes.length;
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(notes[bubblePitch], ctx.currentTime);
-    gain.gain.setValueAtTime(0.07, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.09);
-  } catch(e) {}
-}
+  about:{title:'AboutMe.exe',fx:0.28,fy:0.10,html:`<div class="sub-c"><h2>About Me</h2>
+    <p style="margin-bottom:14px">Hey! I'm Komail — an application developer and CS student based in Hamburg. I'm deeply passionate about building with AI agents and exploring what becomes possible when intelligent systems meet well-crafted software. There's something genuinely exciting about being at that edge right now.</p>
+    <p style="margin-bottom:14px">Outside of coding I'm usually lost in music across pretty much every genre, watching football (Champions League nights hit different), or deep in a game. I like things that reward attention — whether that's a great album, a tactical match, or an interesting build.</p>
+    <div class="facts-box"><div class="facts-label">// fun_facts.txt</div>
+    <div class="bubbles"><span class="bub" onmouseenter="sndBubble()">🤖 AI agent builder</span><span class="bub" onmouseenter="sndBubble()">🎵 Music all day</span><span class="bub" onmouseenter="sndBubble()">⚽ UCL fan</span><span class="bub" onmouseenter="sndBubble()">🎮 Gamer at heart</span><span class="bub" onmouseenter="sndBubble()">🇩🇪 Hamburg based</span><span class="bub" onmouseenter="sndBubble()">☕ Coffee required</span></div>
+    </div></div>`},
 
-/* ── STATE ── */
-var windows = {};
-var zBase = 10;
-var maximizedState = {};
-var minimizedState = {};
-var savedPositions = {};
-var windowPositions = {};
-var mainMinimized = false;
-var mainMaximized = false;
-var mainUserMoved = false;
-var TASKBAR_H = 34;
-var WIN_ANIM_MS = 280;
+  github:{title:'GitHub.lnk',fx:0.20,fy:0.12,html:`<div class="sub-c"><h2>GitHub</h2>
+    <p style="margin-bottom:14px">Check out my open source work and side projects.</p>
+    <div class="proj"><div class="pname">↗ portfolio-os</div><div class="pdesc">Source code for this site</div><div class="pbubs"><div class="bubbles"><span class="bub" onmouseenter="sndBubble()">HTML</span><span class="bub" onmouseenter="sndBubble()">CSS</span><span class="bub" onmouseenter="sndBubble()">JS</span></div></div></div>
+    <div class="proj"><div class="pname">↗ habit-tracker</div><div class="pdesc">Calendar-based full-stack habit tracking application</div><div class="pbubs"><div class="bubbles"><span class="bub" onmouseenter="sndBubble()">Node.js</span><span class="bub" onmouseenter="sndBubble()">Firestore</span></div></div></div>
+    <a href="https://github.com/komailabi" target="_blank" class="rbtn full">Open GitHub ↗</a></div>`},
 
-/* ── WINDOW CONTENT ── */
-var content = {
-  resume: {
-    title: 'MyResume.pdf',
-    pos: {top:'10%', left:'24%'},
-    compact: true,
-    html: `<div class="sub-content">
-      <h2>Curriculum Vitae</h2>
-      <div class="entry">
-        <div class="entry-title">Application Developer @ DPS Engineering</div>
-        <div class="entry-sub">2025 – present · Hamburg</div>
-        <div class="entry-desc">Developed scalable applications and automated backend workflows with C#, JavaScript, and PowerFX.</div>
-      </div>
-      <div class="entry">
-        <div class="entry-title">IT-Support @ Imperium Auto Inc.</div>
-        <div class="entry-sub">2021 – 2024 · Brampton, Ontario</div>
-        <div class="entry-desc">Managed systems, networks, and technical troubleshooting across operational workflows.</div>
-      </div>
-      <div class="entry">
-        <div class="entry-title">B.Sc. Computer Science</div>
-        <div class="entry-sub">2024 – 2027 · IU Internationale Hochschule</div>
-      </div>
-      <div class="entry">
-        <div class="entry-title">B.Sc. Computer Science (Transfer)</div>
-        <div class="entry-sub">2023 – 2024 · Sheridan College</div>
-      </div>
-      <div class="tech-stack">
-        <div class="tech-group">
-          <div class="tech-group-label">// programming_languages</div>
-          <div class="tech-bubbles">
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">C#</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Java</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Python</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">JavaScript</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">C</span>
-          </div>
-        </div>
-        <div class="tech-group">
-          <div class="tech-group-label">// web_dev_&_databases</div>
-          <div class="tech-bubbles">
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Next.js</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">HTML5/CSS3</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">SQL</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Microsoft Dataverse</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Firebase</span>
-          </div>
-        </div>
-        <div class="tech-group">
-          <div class="tech-group-label">// low-code_&_automation</div>
-          <div class="tech-bubbles">
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Power Apps</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Power Automate</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Power BI</span>
-          </div>
-        </div>
-        <div class="tech-group">
-          <div class="tech-group-label">// tools_&_methodologies</div>
-          <div class="tech-bubbles">
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Git/GitHub</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Microsoft Office</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Excel</span>
-            <span class="tech-bubble" onmouseenter="playBubbleHover()">Agile (Scrum)</span>
-          </div>
-        </div>
-      </div>
-      <a href="resume.pdf" download="Komail_Yusufzade_Resume.pdf" class="retro-btn resume-dl-btn">⬇ Download PDF</a>
-    </div>`
-  },
-  projects: {
-    title: 'My_Projects.dir',
-    pos: {top:'10%', left:'30%'},
-    html: `<div class="sub-content">
-      <h2>Selected Work</h2>
-      <div class="project-item">
-        <div class="project-name">Portfolio OS</div>
-        <div class="project-desc">This very website. A retro Mac-inspired personal site built with vanilla HTML/CSS/JS.</div>
-        <div class="project-tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JS</span></div>
-      </div>
-      <div class="project-item">
-        <div class="project-name">Project Management App</div>
-        <div class="project-desc">Built for an established mid-sized company allowing them to track customers, projects, payments, budget forecasting, and invoices.</div>
-        <div class="project-tags"><span class="tag">Power Apps</span><span class="tag">C#</span><span class="tag">JavaScript</span><span class="tag">SQL</span></div>
-      </div>
-      <div class="project-item">
-        <div class="project-name">Habit Tracker</div>
-        <div class="project-desc">A simple calendar-based habit tracker designed to help users build consistent habits by offering a visual overview of daily progress. Simulates a user-centered experience while demonstrating full-stack web development using modern accessible tools.</div>
-        <div class="project-tags"><span class="tag">Node.js + Express</span><span class="tag">Google Firestore</span><span class="tag">HTML/CSS/JS</span></div>
-      </div>
-    </div>`
-  },
-  about: {
-    title: 'AboutMe.exe',
-    pos: {top:'12%', left:'38%'},
-    html: `<div class="sub-content">
-      <h2>About Me</h2>
-      <p style="margin-bottom:14px">Hi! I'm Komail, an application developer and CS student based in Hamburg. I care deeply about crafting digital experiences and exploring the intersection of code and artificial intelligence.</p>
-      <p style="margin-bottom:14px">[Placeholder paragraph for hobbies and interests goes here...]</p>
-      <div style="border:1.5px solid #C3CDE6;padding:14px;background:#ede7d9;margin-top:14px">
-        <div style="font-size:11px;color:#15317E;margin-bottom:8px;font-weight:500">// fun_facts.txt</div>
-        <div style="margin-bottom:5px">[Placeholder Fact 1]</div>
-        <div style="margin-bottom:5px">[Placeholder Fact 2]</div>
-        <div style="margin-bottom:5px">[Placeholder Fact 3]</div>
-        <div>[Placeholder Fact 4]</div>
-      </div>
-    </div>`
-  },
-  github: {
-    title: 'GitHub.lnk → github.com',
-    pos: {top:'14%', left:'26%'},
-    html: `<div class="sub-content">
-      <h2>GitHub</h2>
-      <p style="margin-bottom:14px">Check out my open source work and side projects.</p>
-      <div style="font-size:11px;color:#15317E;margin-bottom:12px;font-weight:500">// recent repos</div>
-      <div class="project-item">
-        <div class="project-name">↗ portfolio-os</div>
-        <div class="project-desc">Source code for this site</div>
-        <div class="project-tags"><span class="tag">⭐ 48</span><span class="tag">HTML</span></div>
-      </div>
-      <div class="project-item">
-        <div class="project-name">↗ habit-tracker</div>
-        <div class="project-desc">Calendar-based full-stack habit tracking application</div>
-        <div class="project-tags"><span class="tag">⭐ 12</span><span class="tag">JS</span></div>
-      </div>
-      <button class="retro-btn" style="margin-top:12px;width:100%" onclick="window.open('https://github.com/komailabi','_blank')">Open GitHub ↗</button>
-    </div>`
-  },
-  contact: {
-    title: 'Contact_Me.form',
-    pos: {top:'16%', left:'34%'},
-    html: `<div class="sub-content">
-      <h2>Get In Touch</h2>
-      <div class="contact-field"><div class="contact-label">EMAIL</div><div class="contact-val">komailyusufzade@yahoo.com</div></div>
-      <div class="contact-field"><div class="contact-label">LINKEDIN</div><div class="contact-val">linkedin.com/in/komail-yusufzade-b203b82b0/</div></div>
-      <div class="contact-field"><div class="contact-label">GITHUB</div><div class="contact-val">github.com/komailabi</div></div>
-      <div class="contact-field"><div class="contact-label">LOCATION</div><div class="contact-val">Hamburg, Germany 🇩🇪</div></div>
-      <div style="border-top:1px solid #C3CDE6;margin-top:16px;padding-top:14px">
-        <div style="font-size:11px;color:#15317E;margin-bottom:9px;font-weight:500">// send a message</div>
-        <input placeholder="Your message..." style="width:100%;background:#ede7d9;border:1.5px solid #C3CDE6;padding:9px;font-size:12px;color:#1a1a1a;margin-bottom:9px;display:block">
-        <button class="retro-btn" style="width:100%">Send Message ✉</button>
-      </div>
-    </div>`
-  }
+  contact:{title:'Contact_Me.form',fx:0.25,fy:0.14,html:`<div class="sub-c"><h2>Get In Touch</h2>
+    <div class="cfield"><div class="clabel">EMAIL</div><div class="cval"><a href="mailto:komailyusufzade@yahoo.com">komailyusufzade@yahoo.com</a></div></div>
+    <div class="cfield"><div class="clabel">LINKEDIN</div><div class="cval"><a href="https://linkedin.com/in/komail-yusufzade-b203b82b0" target="_blank">linkedin.com/in/komail-yusufzade</a></div></div>
+    <div class="cfield"><div class="clabel">GITHUB</div><div class="cval"><a href="https://github.com/komailabi" target="_blank">github.com/komailabi</a></div></div>
+    <div class="cfield"><div class="clabel">LOCATION</div><div class="cval">Hamburg, Germany 🇩🇪</div></div>
+    <div class="cbtns">
+      <a href="mailto:komailyusufzade@yahoo.com" class="cbtn"><svg viewBox="0 0 24 24" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>Send Email</a>
+      <a href="https://linkedin.com/in/komail-yusufzade-b203b82b0" target="_blank" class="cbtn"><svg viewBox="0 0 24 24" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><line x1="8" y1="11" x2="8" y2="17"/><line x1="8" y1="7" x2="8" y2="8"/><path d="M12 11v6M12 11c0-2 4-2 4 0v6"/></svg>LinkedIn</a>
+      <a href="https://github.com/komailabi" target="_blank" class="cbtn"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2C6.5 2 2 6.5 2 12c0 4.5 2.9 8.3 7 9.7.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.3 1.1 2.9.9.1-.7.3-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.3.1-2.7 0 0 .8-.3 2.8 1.1a9.7 9.7 0 015 0C17.2 6.7 18 7 18 7c.6 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.8-4.6 5 .4.3.7 1 .7 1.9v2.9c0 .3.2.6.7.5 4-1.4 7-5.2 7-9.7C22 6.5 17.5 2 12 2z"/></svg>GitHub</a>
+    </div></div>`}
 };
 
-/* ── WINDOW GEOMETRY ── */
-function desktopRect() {
-  return document.getElementById('desktop').getBoundingClientRect();
+/* ════ GEOMETRY ════ */
+function vw(){return window.innerWidth;}
+function vh(){return window.innerHeight;}
+function mob(){return vw()<=768;}
+function botH(){return TH+(mob()?MOB_H:0);}
+
+/* Save position as fractions */
+function savePosFrac(el,id){
+  var r=el.getBoundingClientRect();
+  POS_FRAC[id]={fx:r.left/vw(), fy:r.top/vh()};
 }
 
-function captureWindowState(el) {
-  var dr = desktopRect();
-  var r = el.getBoundingClientRect();
-  return {
-    top: r.top - dr.top,
-    left: r.left - dr.left,
-    width: r.width,
-    height: r.height
-  };
+/* Apply fractional position (clamped) */
+function applyPosFrac(el,fx,fy){
+  var w=el.offsetWidth, h=el.offsetHeight;
+  var maxLeft=vw()-w, maxTop=vh()-botH()-h;
+  var left=Math.min(Math.max(0,Math.round(fx*vw())), maxLeft);
+  var top =Math.min(Math.max(0,Math.round(fy*vh())), Math.max(0,maxTop));
+  el.style.left=left+'px'; el.style.top=top+'px'; el.style.transform='none';
 }
 
-function applyWindowState(el, state) {
-  el.style.transform = 'none';
-  el.style.top = state.top + 'px';
-  el.style.left = state.left + 'px';
-  el.style.width = state.width + 'px';
-  if (state.height) el.style.height = state.height + 'px';
+function setMaxHeight(el){
+  var avail=vh()-botH()-42-20;
+  var wb=el.querySelector('.win-body');
+  if(wb) wb.style.maxHeight=Math.max(200,avail)+'px';
 }
 
-function saveWindowPosition(winId) {
-  var el = document.getElementById(winId);
-  if (!el || el.style.display === 'none') return;
-  windowPositions[winId] = captureWindowState(el);
-}
-
-function parsePosValue(val, total) {
-  if (!val) return 0;
-  if (typeof val === 'number') return val;
-  if (String(val).indexOf('%') !== -1) return parseFloat(val) / 100 * total;
-  return parseFloat(val) || 0;
-}
-
-function placeWindow(el, top, left) {
-  el.style.transform = 'none';
-  el.style.top = top + 'px';
-  el.style.left = left + 'px';
-  saveWindowPosition(el.id);
-}
-
-function centerMainWindow(animate) {
-  var w = document.getElementById('mainWindow');
-  if (!w || mainMaximized || mainMinimized) return;
-  var dr = desktopRect();
-  var rail = document.querySelector('.icons-rail');
-  var minLeft = rail ? rail.offsetLeft + rail.offsetWidth + 20 : 120;
-  var ww = w.offsetWidth;
-  var wh = w.offsetHeight;
-  var state = {
-    top: Math.max(12, (dr.height - wh) / 2),
-    left: Math.max(minLeft, (dr.width - ww) / 2),
-    width: ww,
-    height: wh
-  };
-  if (state.left + ww > dr.width - 12) state.left = Math.max(minLeft, dr.width - ww - 12);
-  if (animate) {
-    smoothMoveWindow(w, state, WIN_ANIM_MS);
-  } else {
-    applyWindowState(w, state);
-    saveWindowPosition('mainWindow');
-  }
-}
-
-function getTaskbarTarget(winId) {
-  var btnId = winId === 'mainWindow' ? 'tbtn_main' : 'tbtn_' + winId.replace('win_', '');
-  var btn = document.getElementById(btnId);
-  var dr = desktopRect();
-  if (btn) {
-    var br = btn.getBoundingClientRect();
-    return { top: br.top - dr.top + 2, left: br.left - dr.left + 2 };
-  }
-  return { top: dr.height - TASKBAR_H + 2, left: 16 };
-}
-
-function smoothMoveWindow(el, toState, duration, onDone) {
-  var from = captureWindowState(el);
-  el.classList.add('window-animating');
-  var anim = el.animate([
-    {
-      top: from.top + 'px',
-      left: from.left + 'px',
-      width: from.width + 'px',
-      opacity: from.opacity !== undefined ? from.opacity : 1,
-      transform: from.scale !== undefined ? 'scale(' + from.scale + ')' : 'scale(1)'
-    },
-    {
-      top: toState.top + 'px',
-      left: toState.left + 'px',
-      width: (toState.width || from.width) + 'px',
-      opacity: toState.opacity !== undefined ? toState.opacity : 1,
-      transform: toState.scale !== undefined ? 'scale(' + toState.scale + ')' : 'scale(1)'
-    }
-  ], { duration: duration || WIN_ANIM_MS, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' });
-
-  anim.onfinish = function() {
-    applyWindowState(el, {
-      top: toState.top,
-      left: toState.left,
-      width: toState.width || from.width,
-      height: toState.height || from.height
-    });
-    el.style.opacity = '';
-    el.style.transform = 'none';
-    el.classList.remove('window-animating');
-    anim.cancel();
-    if (onDone) onDone();
-  };
-  return anim;
-}
-
-function minimizeToTaskbar(el, winId, onDone) {
-  saveWindowPosition(winId);
-  var current = windowPositions[winId] || captureWindowState(el);
-  var target = getTaskbarTarget(winId);
-  el.classList.add('window-animating');
-  var anim = el.animate([
-    {
-      top: current.top + 'px',
-      left: current.left + 'px',
-      width: current.width + 'px',
-      opacity: 1,
-      transform: 'scale(1)'
-    },
-    {
-      top: target.top + 'px',
-      left: target.left + 'px',
-      width: Math.max(48, current.width * 0.12) + 'px',
-      opacity: 0,
-      transform: 'scale(0.12)'
-    }
-  ], { duration: WIN_ANIM_MS, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' });
-
-  anim.onfinish = function() {
-    el.style.display = 'none';
-    el.style.opacity = '';
-    el.style.transform = 'none';
-    el.classList.remove('window-animating');
-    anim.cancel();
-    if (onDone) onDone();
-  };
-}
-
-function restoreFromTaskbar(el, winId, onDone) {
-  var saved = windowPositions[winId];
-  if (!saved) {
-    if (winId === 'mainWindow') {
-      centerMainWindow(false);
-      saved = windowPositions['mainWindow'];
-    } else {
-      saved = captureWindowState(el);
-    }
-  }
-  var target = getTaskbarTarget(winId);
-  el.style.display = '';
-  el.classList.add('window-animating');
-  applyWindowState(el, {
-    top: target.top,
-    left: target.left,
-    width: Math.max(48, saved.width * 0.12),
-    height: saved.height
-  });
-  el.style.opacity = '0';
-  el.style.transform = 'scale(0.12)';
-
-  requestAnimationFrame(function() {
-    var anim = el.animate([
-      {
-        top: target.top + 'px',
-        left: target.left + 'px',
-        width: Math.max(48, saved.width * 0.12) + 'px',
-        opacity: 0,
-        transform: 'scale(0.12)'
-      },
-      {
-        top: saved.top + 'px',
-        left: saved.left + 'px',
-        width: saved.width + 'px',
-        opacity: 1,
-        transform: 'scale(1)'
-      }
-    ], { duration: WIN_ANIM_MS, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' });
-
-    anim.onfinish = function() {
-      applyWindowState(el, saved);
-      el.style.opacity = '';
-      el.style.transform = 'none';
-      el.classList.remove('window-animating');
-      anim.cancel();
-      if (onDone) onDone();
-    };
-  });
-}
-
-/* ── OPEN ── */
-function openWindow(id) {
-  playOpen();
-  if (windows[id]) {
-    if (minimizedState[id]) restoreWindow(id);
-    windows[id].style.zIndex = ++zBase;
+function centerMain(){
+  var el=document.getElementById('winMain');
+  if(mob()){
+    el.style.width='calc(100vw - 10px)';
+    el.style.left='5px'; el.style.top='5px'; el.style.transform='none';
+    setMaxHeight(el);
+    POS_FRAC['winMain']={fx:5/vw(),fy:5/vh()};
     return;
   }
-  var c = content[id];
-  if (!c) return;
-  var w = document.createElement('div');
-  w.className = 'sub-window window-opening' + (c.compact ? ' resume-window' : '');
-  w.id = 'win_' + id;
-  w.style.zIndex = ++zBase;
-  w.innerHTML = `
-    <div class="titlebar" onmousedown="startDrag(event,'win_${id}')">
-      <div class="titlebar-dots">
-        <div class="dot close" onclick="closeWindow('${id}')"></div>
-        <div class="dot min"   onclick="minimizeWindow('${id}')"></div>
-        <div class="dot max"   onclick="toggleMaximize('win_${id}')"></div>
-      </div>
-      <div class="titlebar-title">${c.title}</div>
-    </div>
-    <div class="window-body" id="win_${id}-body">${c.html}</div>
-  `;
-  document.getElementById('desktop').appendChild(w);
-  windows[id] = w;
-  w.addEventListener('mousedown', function() { w.style.zIndex = ++zBase; });
-  setTimeout(function() { w.classList.remove('window-opening'); }, 320);
-
-  var dr = desktopRect();
-  placeWindow(w, parsePosValue(c.pos.top, dr.height), parsePosValue(c.pos.left, dr.width));
-  addTaskbarBtn(id, c.title);
+  var w=el.offsetWidth, h=el.offsetHeight;
+  var left=Math.round((vw()-w)/2);
+  var top =Math.round((vh()-botH()-h)/2);
+  left=Math.max(140,left); top=Math.max(10,top);
+  el.style.left=left+'px'; el.style.top=top+'px'; el.style.transform='none';
+  setMaxHeight(el);
+  POS_FRAC['winMain']={fx:left/vw(), fy:top/vh()};
 }
 
-/* ── CLOSE ── */
-function closeWindow(id) {
-  playClose();
-  var w = windows[id];
-  if (!w) return;
-  w.classList.add('window-closing');
-  setTimeout(function() {
-    w.remove();
-    delete windows[id];
-    delete minimizedState[id];
-    delete maximizedState['win_' + id];
-    delete windowPositions['win_' + id];
-    delete savedPositions['win_' + id];
-    removeTaskbarBtn(id);
-  }, 200);
-}
-
-function closeMainWindow() {
-  playClose();
-  var w = document.getElementById('mainWindow');
-  w.classList.add('window-closing');
-  setTimeout(function() {
-    w.style.display = 'none';
-    w.classList.remove('window-closing');
-  }, 200);
-}
-
-/* ── MINIMIZE / RESTORE ── */
-function minimizeWindow(id) {
-  playMinimize();
-  var w = windows[id];
-  if (!w || minimizedState[id]) return;
-  minimizedState[id] = true;
-  addTaskbarBtn(id, content[id].title);
-  minimizeToTaskbar(w, 'win_' + id, function() {
-    var btn = document.getElementById('tbtn_' + id);
-    if (btn) btn.classList.add('active');
-  });
-}
-
-function restoreWindow(id) {
-  playOpen();
-  var w = windows[id];
-  if (!w || !minimizedState[id]) return;
-  minimizedState[id] = false;
-  w.style.zIndex = ++zBase;
-  restoreFromTaskbar(w, 'win_' + id, function() {
-    var btn = document.getElementById('tbtn_' + id);
-    if (btn) btn.classList.remove('active');
-  });
-}
-
-function minimizeMain() {
-  playMinimize();
-  var w = document.getElementById('mainWindow');
-  if (mainMinimized) return;
-  mainMinimized = true;
-  addMainTaskbarBtn();
-  minimizeToTaskbar(w, 'mainWindow');
-}
-
-function restoreMain() {
-  playOpen();
-  var w = document.getElementById('mainWindow');
-  if (!mainMinimized) return;
-  mainMinimized = false;
-  w.style.zIndex = ++zBase;
-  restoreFromTaskbar(w, 'mainWindow', function() {
-    removeTaskbarBtn('main');
-  });
-}
-
-/* ── MAXIMIZE ── */
-function toggleMaximize(winId) {
-  playMaximize();
-  var w = document.getElementById(winId);
-  if (!w || w.classList.contains('window-animating')) return;
-  var dr = desktopRect();
-
-  if (maximizedState[winId]) {
-    var s = savedPositions[winId];
-    if (s) {
-      smoothMoveWindow(w, s, WIN_ANIM_MS, function() {
-        w.style.maxHeight = '';
-        w.style.height = '';
-        w.style.overflowY = '';
-        w.style.width = s.width + 'px';
-        saveWindowPosition(winId);
-      });
-    }
-    maximizedState[winId] = false;
-    if (winId === 'mainWindow') mainMaximized = false;
+/* ════ OPEN ════ */
+function openWin(id){
+  sndClick();
+  if(WINS[id]){if(IS_MIN[id])restoreWin(id);WINS[id].style.zIndex=++zTop;return;}
+  var c=C[id];if(!c)return;
+  var el=document.createElement('div');
+  el.className='win win-sub'+(c.narrow?' narrow':'');
+  el.id='win_'+id; el.style.zIndex=++zTop;
+  el.style.transformOrigin='center center';
+  el.innerHTML='<div class="titlebar" id="bar_'+id+'">'
+    +'<div class="dots"><div class="dot dot-r" onclick="closeWin(\''+id+'\')"></div>'
+    +'<div class="dot dot-y" onclick="minimizeWin(\''+id+'\')"></div>'
+    +'<div class="dot dot-g" onclick="maximizeWin(\'win_'+id+'\')"></div></div>'
+    +'<div class="bar-title">'+c.title+'</div></div>'
+    +'<div class="win-body">'+c.html+'</div>';
+  document.getElementById('desktop').appendChild(el);
+  WINS[id]=el;
+  /* position */
+  if(mob()){
+    el.style.width='calc(100vw - 10px)';
+    el.style.left='5px'; el.style.top='5px';
+    POS_FRAC[id]={fx:5/vw(),fy:5/vh()};
   } else {
-    saveWindowPosition(winId);
-    savedPositions[winId] = windowPositions[winId] || captureWindowState(w);
-    smoothMoveWindow(w, {
-      top: 0,
-      left: 0,
-      width: dr.width,
-      height: dr.height - TASKBAR_H
-    }, WIN_ANIM_MS, function() {
-      w.style.maxHeight = (dr.height - TASKBAR_H) + 'px';
-      w.style.overflowY = 'auto';
-      w.style.zIndex = ++zBase;
-    });
-    maximizedState[winId] = true;
-    if (winId === 'mainWindow') mainMaximized = true;
+    applyPosFrac(el,c.fx,c.fy);
+    POS_FRAC[id]={fx:c.fx,fy:c.fy};
   }
+  setMaxHeight(el);
+  el.classList.add('anim-open');
+  el.addEventListener('animationend',function h(){el.classList.remove('anim-open');el.removeEventListener('animationend',h);});
+  el.addEventListener('mousedown',function(){el.style.zIndex=++zTop;});
+  if(!mob()) makeDraggable(el,'bar_'+id,'win_'+id);
+  addTbtn(id,c.title);
 }
 
-/* ── TASKBAR ── */
-function addTaskbarBtn(id, title) {
-  removeTaskbarBtn(id);
-  var bar = document.getElementById('taskbar');
-  var clock = document.getElementById('clock');
-  var btn = document.createElement('div');
-  btn.className = 'taskbar-btn';
-  btn.id = 'tbtn_' + id;
-  btn.textContent = title.split(/[\.\s–]/)[0];
-  btn.onclick = function() {
-    if (minimizedState[id]) restoreWindow(id);
-    else if (windows[id]) windows[id].style.zIndex = ++zBase;
-  };
-  bar.insertBefore(btn, clock);
+/* ════ CLOSE ════ */
+function closeWin(id){
+  sndClose();
+  var el=WINS[id];if(!el)return;
+  el.style.transformOrigin='center center';
+  el.classList.add('anim-close');
+  setTimeout(function(){el.remove();delete WINS[id];delete IS_MIN[id];delete IS_MAX[id];delete SAVED_PX[id];delete POS_FRAC[id];rmTbtn(id);},220);
+}
+function closeMain(){
+  sndClose();
+  var el=document.getElementById('winMain');
+  el.style.transformOrigin='center center';
+  el.classList.add('anim-close');
+  setTimeout(function(){el.style.display='none';el.classList.remove('anim-close');},220);
 }
 
-function addMainTaskbarBtn() {
-  removeTaskbarBtn('main');
-  var bar = document.getElementById('taskbar');
-  var clock = document.getElementById('clock');
-  var btn = document.createElement('div');
-  btn.className = 'taskbar-btn active';
-  btn.id = 'tbtn_main';
-  btn.textContent = 'Welcome';
-  btn.onclick = restoreMain;
-  bar.insertBefore(btn, clock);
+/* ════ MINIMIZE ════ */
+function minimizeWin(id){
+  sndMin();var el=WINS[id];if(!el||IS_MIN[id])return;
+  IS_MIN[id]=true;
+  el.style.transformOrigin='center bottom';
+  el.classList.add('anim-min-out');
+  setTimeout(function(){el.style.visibility='hidden';el.classList.remove('anim-min-out');
+    var b=document.getElementById('tb_'+id);if(b)b.classList.add('active');},260);
+}
+function restoreWin(id){
+  sndClick();var el=WINS[id];if(!el||!IS_MIN[id])return;
+  IS_MIN[id]=false;
+  /* restore to last known fractional position */
+  var pf=POS_FRAC[id];
+  if(pf) applyPosFrac(el,pf.fx,pf.fy);
+  el.style.visibility='visible';el.style.zIndex=++zTop;
+  el.style.transformOrigin='center bottom';
+  el.classList.add('anim-min-in');
+  el.addEventListener('animationend',function h(){el.classList.remove('anim-min-in');el.removeEventListener('animationend',h);});
+  var b=document.getElementById('tb_'+id);if(b)b.classList.remove('active');
+}
+function minimizeMain(){
+  sndMin();if(mainMin)return;mainMin=true;
+  var el=document.getElementById('winMain');
+  el.style.transformOrigin='center bottom';
+  el.classList.add('anim-min-out');
+  setTimeout(function(){el.style.visibility='hidden';el.classList.remove('anim-min-out');addMainTbtn();},260);
+}
+function restoreMain(){
+  sndClick();if(!mainMin)return;mainMin=false;
+  var el=document.getElementById('winMain');
+  var pf=POS_FRAC['winMain'];
+  if(pf) applyPosFrac(el,pf.fx,pf.fy);
+  el.style.visibility='visible';el.style.zIndex=++zTop;
+  el.style.transformOrigin='center bottom';
+  el.classList.add('anim-min-in');
+  el.addEventListener('animationend',function h(){el.classList.remove('anim-min-in');el.removeEventListener('animationend',h);});
+  rmTbtn('main');
 }
 
-function removeTaskbarBtn(id) {
-  var el = document.getElementById('tbtn_' + id);
-  if (el) el.remove();
-}
-
-/* ── DRAG ── */
-var dragging = null, dragId = null, dragOx = 0, dragOy = 0;
-function startDrag(e, id) {
-  if (maximizedState[id]) return;
-  dragging = document.getElementById(id);
-  if (!dragging) return;
-  dragId = id;
-  dragging.style.zIndex = ++zBase;
-  var r = dragging.getBoundingClientRect();
-  dragOx = e.clientX - r.left;
-  dragOy = e.clientY - r.top;
-  e.preventDefault();
-}
-document.addEventListener('mousemove', function(e) {
-  if (!dragging) return;
-  var dr = desktopRect();
-  var w = dragging.offsetWidth;
-  var h = dragging.offsetHeight;
-  var maxTop = dr.height - TASKBAR_H - h;
-  var left = Math.min(Math.max(0, e.clientX - dr.left - dragOx), dr.width - w);
-  var top = Math.min(Math.max(0, e.clientY - dr.top - dragOy), maxTop);
-  dragging.style.left = left + 'px';
-  dragging.style.top = top + 'px';
-  dragging.style.transform = 'none';
-});
-document.addEventListener('mouseup', function() {
-  if (dragging && dragId) {
-    saveWindowPosition(dragId);
-    if (dragId === 'mainWindow') mainUserMoved = true;
-  }
-  dragging = null;
-  dragId = null;
-});
-
-function clampOpenWindows() {
-  var dr = desktopRect();
-  Object.keys(windows).forEach(function(id) {
-    var w = windows[id];
-    if (!w || w.style.display === 'none' || minimizedState[id] || maximizedState['win_' + id]) return;
-    var state = captureWindowState(w);
-    var maxTop = dr.height - TASKBAR_H - state.height;
-    state.left = Math.min(Math.max(0, state.left), dr.width - state.width);
-    state.top = Math.min(Math.max(0, state.top), maxTop);
-    applyWindowState(w, state);
-    saveWindowPosition('win_' + id);
-  });
-}
-
-function handleViewportResize() {
-  var dr = desktopRect();
-  Object.keys(maximizedState).forEach(function(winId) {
-    if (!maximizedState[winId]) return;
-    var w = document.getElementById(winId);
-    if (!w) return;
-    w.style.width = dr.width + 'px';
-    w.style.maxHeight = (dr.height - TASKBAR_H) + 'px';
-  });
-  if (!mainMinimized && !mainMaximized) {
-    if (!mainUserMoved) centerMainWindow(false);
-    else {
-      var w = document.getElementById('mainWindow');
-      if (w && w.style.display !== 'none') {
-        var state = captureWindowState(w);
-        var maxTop = dr.height - TASKBAR_H - state.height;
-        state.left = Math.min(Math.max(0, state.left), dr.width - state.width);
-        state.top = Math.min(Math.max(0, state.top), maxTop);
-        applyWindowState(w, state);
-        saveWindowPosition('mainWindow');
-      }
+/* ════ MAXIMIZE ════ */
+function maximizeWin(elId){
+  sndMax();
+  var el=document.getElementById(elId);if(!el)return;
+  var bh=botH();
+  if(IS_MAX[elId]){
+    /* RESTORE from saved fractional position */
+    var s=SAVED_PX[elId];
+    if(s){
+      el.style.width=s.w+'px'; el.style.height=''; el.style.maxHeight=''; el.style.overflowY='';
+      var wb=el.querySelector('.win-body');if(wb)wb.style.maxHeight='';
+      applyPosFrac(el,s.fx,s.fy);
+      setMaxHeight(el);
     }
+    IS_MAX[elId]=false;
+    el.classList.add('anim-max');el.addEventListener('animationend',function h(){el.classList.remove('anim-max');el.removeEventListener('animationend',h);});
+  } else {
+    /* save current size + fractional position */
+    var pf=POS_FRAC[elId]||{fx:el.getBoundingClientRect().left/vw(),fy:el.getBoundingClientRect().top/vh()};
+    SAVED_PX[elId]={w:el.offsetWidth,fx:pf.fx,fy:pf.fy};
+    el.style.width=vw()+'px'; el.style.height=(vh()-bh)+'px';
+    el.style.maxHeight=(vh()-bh)+'px'; el.style.overflowY='auto';
+    var wb=el.querySelector('.win-body');if(wb)wb.style.maxHeight=(vh()-bh-42)+'px';
+    el.style.left='0px'; el.style.top='0px'; el.style.transform='none';
+    el.style.zIndex=++zTop; IS_MAX[elId]=true;
+    el.classList.add('anim-max');el.addEventListener('animationend',function h(){el.classList.remove('anim-max');el.removeEventListener('animationend',h);});
   }
-  clampOpenWindows();
 }
 
+/* ════ TASKBAR ════ */
+function addTbtn(id,title){
+  rmTbtn(id);
+  var bar=document.getElementById('taskbar'),clk=document.getElementById('clock');
+  var b=document.createElement('div');b.className='taskbar-btn';b.id='tb_'+id;
+  b.textContent=title.split(/[\s\.–]/)[0];
+  b.onclick=function(){if(IS_MIN[id])restoreWin(id);else if(WINS[id])WINS[id].style.zIndex=++zTop;};
+  bar.insertBefore(b,clk);
+}
+function addMainTbtn(){
+  rmTbtn('main');
+  var bar=document.getElementById('taskbar'),clk=document.getElementById('clock');
+  var b=document.createElement('div');b.className='taskbar-btn active';b.id='tb_main';
+  b.textContent='Welcome';b.onclick=restoreMain;
+  bar.insertBefore(b,clk);
+}
+function rmTbtn(id){var b=document.getElementById('tb_'+id);if(b)b.remove();}
+
+/* ════ DRAG — saves fractional position on mouseup ════ */
+function makeDraggable(el,barId,elId){
+  var bar=document.getElementById(barId);if(!bar)return;
+  var ox=0,oy=0,drag=false;
+  bar.addEventListener('mousedown',function(e){
+    if(IS_MAX[elId])return;
+    drag=true;el.style.zIndex=++zTop;
+    var r=el.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!drag)return;
+    var bh=botH();
+    var left=Math.min(Math.max(0,e.clientX-ox),vw()-el.offsetWidth);
+    var top =Math.min(Math.max(0,e.clientY-oy),vh()-bh-el.offsetHeight);
+    el.style.left=left+'px';el.style.top=top+'px';el.style.transform='none';
+  });
+  document.addEventListener('mouseup',function(){
+    if(drag){drag=false;
+      /* update fractional position after drag */
+      var id=elId.replace('win_','');
+      POS_FRAC[id]={fx:el.getBoundingClientRect().left/vw(),fy:el.getBoundingClientRect().top/vh()};
+    }
+  });
+}
+
+/* main drag */
+(function(){
+  var el=document.getElementById('winMain'),bar=document.getElementById('barMain');
+  var ox=0,oy=0,drag=false;
+  bar.addEventListener('mousedown',function(e){
+    if(IS_MAX['winMain']||mob())return;
+    drag=true;el.style.zIndex=++zTop;
+    var r=el.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!drag)return;
+    var bh=botH();
+    var left=Math.min(Math.max(0,e.clientX-ox),vw()-el.offsetWidth);
+    var top =Math.min(Math.max(0,e.clientY-oy),vh()-bh-el.offsetHeight);
+    el.style.left=left+'px';el.style.top=top+'px';el.style.transform='none';
+  });
+  document.addEventListener('mouseup',function(){
+    if(drag){drag=false;
+      POS_FRAC['winMain']={fx:el.getBoundingClientRect().left/vw(),fy:el.getBoundingClientRect().top/vh()};
+    }
+  });
+})();
+
+/* ════ RESIZE — reapply fractional positions ════ */
 var resizeTimer;
-window.addEventListener('resize', function() {
+window.addEventListener('resize',function(){
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(handleViewportResize, 120);
+  resizeTimer=setTimeout(function(){
+    var bh=botH();
+    /* main window */
+    var mw=document.getElementById('winMain');
+    if(mw&&mw.style.display!=='none'&&!IS_MAX['winMain']&&!mainMin){
+      if(mob()){
+        mw.style.width='calc(100vw - 10px)';
+        mw.style.left='5px';mw.style.top='5px';
+      } else {
+        var pf=POS_FRAC['winMain'];
+        if(pf) applyPosFrac(mw,pf.fx,pf.fy);
+        else   centerMain();
+      }
+      setMaxHeight(mw);
+    }
+    /* maximized windows — resize to new viewport */
+    Object.keys(IS_MAX).forEach(function(eid){
+      if(!IS_MAX[eid])return;
+      var w=document.getElementById(eid);if(!w)return;
+      w.style.width=vw()+'px';w.style.height=(vh()-bh)+'px';w.style.maxHeight=(vh()-bh)+'px';
+      var wb=w.querySelector('.win-body');if(wb)wb.style.maxHeight=(vh()-bh-42)+'px';
+    });
+    /* non-maximized sub-windows — reapply fractional pos */
+    Object.keys(WINS).forEach(function(id){
+      var w=WINS[id];if(!w||IS_MIN[id]||IS_MAX['win_'+id])return;
+      setMaxHeight(w);
+      if(mob()){w.style.width='calc(100vw - 10px)';w.style.left='5px';w.style.top='5px';return;}
+      var pf=POS_FRAC[id];
+      if(pf) applyPosFrac(w,pf.fx,pf.fy);
+    });
+  },80);
 });
 
-/* ── CLOCK ── */
-function updateClock() {
-  var d = new Date();
-  document.getElementById('clock').textContent =
-    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-}
-updateClock();
-setInterval(updateClock, 15000);
-
-window.addEventListener('load', function() {
-  centerMainWindow(false);
-  var mw = document.getElementById('mainWindow');
-  mw.classList.add('ready', 'window-opening');
-  setTimeout(function() { mw.classList.remove('window-opening'); }, 320);
+/* ════ BOOT ════ */
+window.addEventListener('load',function(){
+  var mw=document.getElementById('winMain');
+  centerMain();
+  mw.classList.add('ready','anim-open');
+  mw.style.transformOrigin='center center';
+  mw.addEventListener('animationend',function h(){mw.classList.remove('anim-open');mw.removeEventListener('animationend',h);});
+  setTimeout(function(){document.getElementById('progFill').style.width='72%';},300);
 });
 
-setTimeout(function() { document.getElementById('mainProgress').style.width = '72%'; }, 300);
+function tick(){var d=new Date();document.getElementById('clock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+tick();setInterval(tick,15000);
 </script>
 </body>
 </html>
